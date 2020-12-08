@@ -276,9 +276,9 @@ int konf_tree_del_pattern(konf_tree_t *this,
 			res++;
 			continue;
 		}
+		lub_list_node_copy(tmp, iter);
 		lub_list_del(this->list, iter);
 		konf_tree_delete(conf);
-		lub_list_node_copy(tmp, iter);
 		lub_list_node_free(iter);
 		iter = tmp;
 		del_cnt++;
