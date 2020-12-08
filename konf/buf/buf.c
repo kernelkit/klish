@@ -250,4 +250,5 @@ void konf_buftree_remove(lub_list_t *this, int fd)
 
 	konf_buf_delete((konf_buf_t *)lub_list_node__get_data(t));
 	lub_list_del(this, t);
+	lub_list_node_free(t);
 }
