@@ -250,6 +250,10 @@ int konf_tree_del_pattern(konf_tree_t *this,
 	if (!(iter = lub_list__get_head(this->list)))
 		return 0;
 
+	/* Pattern is not specified */
+	if (!pattern)
+		return -1;
+
 	/* Compile regular expression */
 	if (regcomp(&regexp, pattern, REG_EXTENDED | REG_ICASE) != 0)
 		return -1;
