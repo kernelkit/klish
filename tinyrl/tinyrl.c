@@ -369,7 +369,7 @@ static bool_t tinyrl_key_up(tinyrl_t * this, int key)
 	}
 	if (entry) {
 		/* display the entry moving the insertion point
-		 * to the end of the line 
+		 * to the end of the line
 		 */
 		this->line = tinyrl_history_entry__get_line(entry);
 		this->point = this->end = strlen(this->line);
@@ -396,7 +396,7 @@ static bool_t tinyrl_key_down(tinyrl_t * this, int key)
 			this->line = tinyrl_history_entry__get_line(entry);
 		}
 		/* display the entry moving the insertion point
-		 * to the end of the line 
+		 * to the end of the line
 		 */
 		this->point = this->end = strlen(this->line);
 		result = BOOL_TRUE;
@@ -1077,7 +1077,7 @@ static char *internal_readline(tinyrl_t * this,
 			lub_string_free(tmp);
 	}
 	/*
-	 * duplicate the string for return to the client 
+	 * duplicate the string for return to the client
 	 * we have to duplicate as we may be referencing a
 	 * history entry or our internal buffer
 	 */
@@ -1203,7 +1203,7 @@ bool_t tinyrl_insert_text(tinyrl_t * this, const char *text)
 }
 
 /*----------------------------------------------------------------------- */
-/* 
+/*
  * A convenience function for displaying a list of strings in columnar
  * format on Readline's output stream. matches is the list of strings,
  * in argv format, such as a list of completion matches. len is the number
@@ -1314,11 +1314,11 @@ bool_t tinyrl_bind_key(tinyrl_t * this, int key, tinyrl_key_func_t * fn)
  * returned array is the substitution for text. The remaining entries
  * are the possible completions. The array is terminated with a NULL pointer.
  *
- * entry_func is a function of two args, and returns a char *. 
+ * entry_func is a function of two args, and returns a char *.
  * The first argument is text. The second is a state argument;
  * it is zero on the first call, and non-zero on subsequent calls.
- * entry_func returns a NULL pointer to the caller when there are no 
- * more matches. 
+ * entry_func returns a NULL pointer to the caller when there are no
+ * more matches.
  */
 char **tinyrl_completion(tinyrl_t * this,
 	const char *line, unsigned int start, unsigned int end,
