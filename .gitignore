@@ -34,6 +34,7 @@
 /debian/klish
 /debian/klish-dev
 /debian/files
+/deb
 
 # Binaries
 /bin/clish
@@ -51,3 +52,4 @@
 /cov-int
 /klish-*.tar*
 /*.tgz
+/*.deb
