@@ -53,7 +53,6 @@ define CONTROL
 PACKAGE: klish
 Version: $(PACKAGE_VERSION)
 Architecture: amd64
-Depends: faux
 Maintainer: pkun
 Description: The klish is a framework for implementing a CISCO-like CLI on a UNIX systems. It is configurable by XML files
 Homepage: http://klish.libcode.org
