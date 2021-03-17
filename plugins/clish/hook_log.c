@@ -28,17 +28,10 @@ CLISH_HOOK_LOG(clish_hook_log)
 		return 0;
 	}
 
-	/* Log the given line */
-	/* Try to get username from environment variables
-	 * USER and LOGNAME and then from /etc/passwd.
-	 */
-	user = clish_shell__get_user(this);
-	if (!(uname = getenv("USER"))) {
-		if (!(uname = getenv("LOGNAME")))
-			uname = user ? user->pw_name : "unknown";
-	}
+	uname = clish_shell_format_username(this);
 	syslog(LOG_INFO, "%u(%s) %s : %d",
 		user ? user->pw_uid : getuid(), uname, line, retcode);
+	free(uname);
 
 	return 0;
 }

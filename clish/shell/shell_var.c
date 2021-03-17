@@ -119,25 +119,7 @@ static char *find_context_var(const char *name, clish_context_t *this)
 		result = strdup(tmp);
 
 	} else if (!lub_string_nocasecmp(name, "_user")) {
-		char *uname = NULL;
-		/* Try to get username from environment variables
-		 * USER and LOGNAME and then from /etc/passwd. Else use UID.
-		 */
-		if (!(uname = getenv("USER"))) {
-			if (!(uname = getenv("LOGNAME"))) {
-				struct passwd *user = NULL;
-				user = clish_shell__get_user(shell);
-				if (user) {
-					uname = user->pw_name;
-				} else {
-					char tmp[10] = {};
-					snprintf(tmp, sizeof(tmp), "%u", getuid());
-					tmp[sizeof(tmp) - 1] = '\0';
-					uname = tmp;
-				}
-			}
-		}
-		result = strdup(uname);
+		result = clish_shell_format_username(shell);
 
 	/* The vars dependent on command. Code supposes this->cmd is valid.
 	 * Don't put command-independent variables after that line.

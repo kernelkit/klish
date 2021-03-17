@@ -192,6 +192,7 @@ int clish_shell_wdog(clish_shell_t *instance);
 int clish_shell__save_history(const clish_shell_t *instance, const char *fname);
 int clish_shell__restore_history(clish_shell_t *instance, const char *fname);
 void clish_shell__stifle_history(clish_shell_t *instance, unsigned int stifle);
+char *clish_shell_format_username(const clish_shell_t *instance);
 
 /* Plugin functions */
 clish_plugin_t * clish_shell_create_plugin(clish_shell_t *instance,
