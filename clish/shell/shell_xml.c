@@ -85,12 +85,12 @@ static int process_node(clish_shell_t *shell, clish_xmlnode_t *node,
 int clish_shell_load_scheme(clish_shell_t *this, const char *xml_path, const char *xslt_path)
 {
 	const char *path = xml_path;
-	char *buffer;
-	char *dirname;
+	char *buffer = NULL;
+	char *dirname = NULL;
 	char *saveptr = NULL;
 	int res = -1;
 	clish_xmldoc_t *doc = NULL;
-	DIR *dir;
+	DIR *dir = NULL;
 
 #ifdef HAVE_LIB_LIBXSLT
 	clish_xslt_t *xslt = NULL;
@@ -116,7 +116,7 @@ int clish_shell_load_scheme(clish_shell_t *this, const char *xml_path, const cha
 	/* Loop though each directory */
 	for (dirname = strtok_r(buffer, path_separators, &saveptr);
 		dirname; dirname = strtok_r(NULL, path_separators, &saveptr)) {
-		struct dirent *entry;
+		struct dirent *entry = NULL;
 
 		/* Search this directory for any XML files */
 		dir = opendir(dirname);
@@ -184,6 +184,7 @@ int clish_shell_load_scheme(clish_shell_t *this, const char *xml_path, const cha
 			root = clish_xmldoc_get_root(doc);
 			r = process_node(this, root, NULL);
 			clish_xmldoc_release(doc);
+			doc = NULL;
 
 			/* Error message */
 			if (r) {
@@ -195,6 +196,7 @@ int clish_shell_load_scheme(clish_shell_t *this, const char *xml_path, const cha
 			lub_string_free(filename);
 		}
 		closedir(dir);
+		dir = NULL;
 	}
 
 /* To don't free memory twice on cleanup */
@@ -202,8 +204,6 @@ int clish_shell_load_scheme(clish_shell_t *this, const char *xml_path, const cha
 	if (!xslt_path)
 		xslt = NULL;
 #endif
-	doc = NULL;
-	dir = NULL;
 	res = 0; /* Success */
 error:
 	lub_string_free(buffer);

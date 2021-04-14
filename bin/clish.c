@@ -75,8 +75,8 @@ int main(int argc, char **argv)
 	bool_t istimeout = BOOL_FALSE;
 	unsigned int timeout = 0;
 	bool_t cmd = BOOL_FALSE; /* -c option */
-	lub_list_t *cmds; /* Commands defined by -c */
-	lub_list_node_t *iter;
+	lub_list_t *cmds = NULL; /* Commands defined by -c */
+	lub_list_node_t *iter = NULL;
 	const char *histfile = "~/.clish_history";
 	char *histfile_expanded = NULL;
 	unsigned int histsize = 50;
@@ -264,6 +264,7 @@ int main(int argc, char **argv)
 	clish_xmldoc_start();
 	if (clish_shell_load_scheme(shell, xml_path, xslt_file))
 		goto end;
+
 	/* Set communication to the konfd */
 	clish_shell__set_socket(shell, socket_path);
 	/* Set lockless mode */
