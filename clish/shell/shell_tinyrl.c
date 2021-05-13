@@ -158,13 +158,14 @@ static bool_t clish_shell_tinyrl_key_space(tinyrl_t *this, int key)
 	const clish_command_t *cmd = NULL;
 	clish_pargv_t *pargv = NULL;
 
-	if(tinyrl_is_empty(this)) {
-		/* ignore space at the begining of the line, don't display commands */
+	/* ignore space at the begining of the line, don't display commands */
+	if (tinyrl_is_empty(this))
 		return BOOL_TRUE;
-	} else if (tinyrl_is_quoting(this)) {
-		/* if we are in the middle of a quote then simply enter a space */
-		result = BOOL_TRUE;
-	} else {
+	
+	/* if we are in the middle of a quote then simply enter a space */
+	/* If it's not a quotation */
+	if (!tinyrl_is_quoting(this)) {
+
 		/* Find out if current line is legal. It can be
 		 * fully completed or partially completed.
 		 */
@@ -180,6 +181,7 @@ static bool_t clish_shell_tinyrl_key_space(tinyrl_t *this, int key)
 		default:
 			break;
 		}
+
 		/* If current line is illegal try to make auto-comletion. */
 		if (!result) {
 			/* perform word completion */
@@ -192,17 +194,18 @@ static bool_t clish_shell_tinyrl_key_space(tinyrl_t *this, int key)
 			case TINYRL_COMPLETED_AMBIGUOUS:
 				/* perform word completion again in case we just did case
 				   modification the first time */
-				status = clish_shell_tinyrl_complete(this);
-				if (status == TINYRL_MATCH_WITH_EXTENSIONS) {
+				clish_shell_tinyrl_complete(this);
+				//status = clish_shell_tinyrl_complete(this);
+				//if (status == TINYRL_MATCH_WITH_EXTENSIONS) {
 					/* all is well with the world just enter a space */
-					result = BOOL_TRUE;
-				}
+				//	result = BOOL_TRUE;
+				//}
 				break;
 			case TINYRL_MATCH:
 			case TINYRL_MATCH_WITH_EXTENSIONS:
 			case TINYRL_COMPLETED_MATCH:
 				/* all is well with the world just enter a space */
-				result = BOOL_TRUE;
+				//result = BOOL_TRUE;
 				break;
 			}
 		}

@@ -193,7 +193,6 @@ static int process_answer(konf_client_t * this, char *str, konf_buf_t *buf, konf
 int konf_client_recv_answer(konf_client_t * this, konf_buf_t **data)
 {
 	konf_buf_t *buf;
-	int nbytes;
 	char *str;
 	int retval = 0;
 	int processed = 0;
@@ -202,7 +201,7 @@ int konf_client_recv_answer(konf_client_t * this, konf_buf_t **data)
 		return -1;
 
 	buf = konf_buf_new(konf_client__get_sock(this));
-	while ((!processed) && (nbytes = konf_buf_read(buf)) > 0) {
+	while ((!processed) && konf_buf_read(buf) > 0) {
 		while ((str = konf_buf_parse(buf))) {
 			konf_buf_t *tmpdata = NULL;
 			retval = process_answer(this, str, buf, &tmpdata);

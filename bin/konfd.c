@@ -261,11 +261,9 @@ int main(int argc, char **argv)
 					konf_buf__set_data(tbuf, (void *)1);
 				FD_SET(new, &active_fd_set);
 			} else {
-				int nbytes;
-
 				tbuf = konf_buftree_find(bufs, i);
 				/* Data arriving on an already-connected socket. */
-				if ((nbytes = konf_buf_read(tbuf)) <= 0) {
+				if (konf_buf_read(tbuf) <= 0) {
 					close(i);
 					FD_CLR(i, &active_fd_set);
 					konf_buftree_remove(bufs, i);
