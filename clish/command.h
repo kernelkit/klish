@@ -75,5 +75,6 @@ int clish_command__get_depth(const clish_command_t * instance);
 clish_view_restore_e clish_command__get_restore(const clish_command_t * instance);
 const clish_command_t * clish_command__get_orig(const clish_command_t * instance);
 const clish_command_t * clish_command__get_cmd(const clish_command_t * instance);
+bool_t clish_command_is_incomplete(const clish_command_t *instance);
 
 #endif				/* _clish_command_h */

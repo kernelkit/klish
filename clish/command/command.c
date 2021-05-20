@@ -298,3 +298,29 @@ const clish_command_t * clish_command__get_cmd(const clish_command_t * this)
 		return clish_command__get_cmd(this->link);
 	return NULL;
 }
+
+/*--------------------------------------------------------- */
+/* Consider command incomplete when it doesn't have any actions to execute.
+   I.e. has no ACTION, doesn't change VIEW, doesn't have CONFIG tag.
+ */
+bool_t clish_command_is_incomplete(const clish_command_t *this)
+{
+	clish_action_t *action = NULL;
+	clish_config_t *config = NULL;
+
+	assert(this);
+	if (!this)
+		return BOOL_TRUE; // Empty command is incomplete
+
+	action = clish_command__get_action(this);
+	config = clish_command__get_config(this);
+	if (!clish_action__get_script(action) &&
+		!clish_action__get_builtin(action) &&
+		(CLISH_CONFIG_NONE == clish_config__get_op(config)) &&
+		!clish_command__get_param_count(this) &&
+		!clish_command__get_viewname(this)) {
+		return BOOL_TRUE;
+	}
+
+	return BOOL_FALSE;
+}

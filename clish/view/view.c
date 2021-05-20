@@ -182,24 +182,7 @@ clish_command_t *clish_view_resolve_prefix(clish_view_t * this,
 clish_command_t *clish_view_resolve_command(clish_view_t *this,
 	const char *line, bool_t inherit)
 {
-	clish_command_t *result = clish_view_resolve_prefix(this, line, inherit);
-
-	if (result) {
-		clish_action_t *action = clish_command__get_action(result);
-		clish_config_t *config = clish_command__get_config(result);
-		if (!clish_action__get_script(action) &&
-			(!clish_action__get_builtin(action)) &&
-			(CLISH_CONFIG_NONE == clish_config__get_op(config)) &&
-			(!clish_command__get_param_count(result)) &&
-			(!clish_command__get_viewname(result))) {
-			/* if this doesn't do anything we've
-			 * not resolved a command
-			 */
-			result = NULL;
-		}
-	}
-
-	return result;
+	return clish_view_resolve_prefix(this, line, inherit);
 }
 
 /*--------------------------------------------------------- */

@@ -42,14 +42,15 @@ static int available_params(clish_shell_t *this,
 	clish_help_t *help, const clish_command_t *cmd,
 	const char *line, size_t *max_width)
 {
-	unsigned index = lub_string_wordcount(line);
-	unsigned idx = lub_string_wordcount(clish_command__get_name(cmd));
-	lub_argv_t *argv;
-	clish_pargv_t *completion, *pargv;
-	unsigned i;
-	unsigned cnt = 0;
+	unsigned int index = lub_string_wordcount(line);
+	unsigned int idx = lub_string_wordcount(clish_command__get_name(cmd));
+	lub_argv_t *argv = NULL;
+	clish_pargv_t *completion = NULL;
+	clish_pargv_t *pargv = NULL;
+	unsigned int i = 0;
+	unsigned int cnt = 0;
 	clish_pargv_status_e status = CLISH_LINE_OK;
-	clish_context_t context;
+	clish_context_t context = {};
 
 	/* Empty line */
 	if (0 == index)
@@ -77,8 +78,8 @@ static int available_params(clish_shell_t *this,
 
 	/* Calculate the longest name */
 	for (i = 0; i < cnt; i++) {
-		const clish_param_t *param;
-		const char *name;
+		const clish_param_t *param = NULL;
+		const char *name = NULL;
 		unsigned clen = 0;
 
 		param = clish_pargv__get_param(completion, i);
