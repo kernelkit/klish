@@ -325,8 +325,8 @@ static bool_t clish_shell_tinyrl_key_enter(tinyrl_t *this, int key)
 		if (clish_shell__get_log(shell) &&
 			clish_shell_check_hook(context, CLISH_SYM_TYPE_LOG)) {
 			char *s = NULL;
-			lub_string_cat(&s, "Syntax error: ");
 			lub_string_cat(&s, line);
+			lub_string_cat(&s, " [syntax]");
 			clish_shell_exec_log(context, s, 2);
 			lub_string_free(s);
 		}
