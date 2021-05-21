@@ -486,7 +486,7 @@ static int process_command(clish_shell_t *shell, clish_xmlnode_t *element,
 #ifdef LEGACY
 	char *lock = clish_xmlnode_fetch_attr(element, "lock");
 	char *interrupt = clish_xmlnode_fetch_attr(element, "interrupt");
-	clish_action_t *action;
+	clish_action_t *action = NULL;
 #endif
 
 	/* Check syntax */
@@ -569,7 +569,7 @@ static int process_command(clish_shell_t *shell, clish_xmlnode_t *element,
 	}
 
 	/* interrupt */
-	if (interrupt) { // Don't change anything if lock is not specified
+	if (interrupt) { // Don't change anything if interrupt is not specified
 		if (lub_string_nocasecmp(interrupt, "true") == 0)
 			clish_action__set_interrupt(action, BOOL_TRUE);
 		else
@@ -924,17 +924,35 @@ static int process_action(clish_shell_t *shell, clish_xmlnode_t *element,
 	if (shebang)
 		clish_action__set_shebang(action, shebang);
 
-	/* lock */
-	if (lock && lub_string_nocasecmp(lock, "false") == 0)
-		clish_action__set_lock(action, BOOL_FALSE);
-
 	/* interactive */
 	if (interactive && lub_string_nocasecmp(interactive, "true") == 0)
 		clish_action__set_interactive(action, BOOL_TRUE);
 
+	/* lock */
+	// Don't change anything if lock is not specified
+	// Legacy COMMAND's lock attr can set it already
+	// By default lock is true.
+	// Note ACTION is always follows parental COMMAND so this code will
+	// redefine COMMAND settings.
+	if (lock) {
+		if (lub_string_nocasecmp(lock, "false") == 0)
+			clish_action__set_lock(action, BOOL_FALSE);
+		else
+			clish_action__set_lock(action, BOOL_TRUE);
+	}
+
 	/* interrupt */
-	if (interrupt && lub_string_nocasecmp(interrupt, "true") == 0)
-		clish_action__set_interrupt(action, BOOL_TRUE);
+	// Don't change anything if interrupt is not specified
+	// Legacy COMMAND's interrupt attr can set it already
+	// By default lock is false.
+	// Note ACTION is always follows parental COMMAND so this code will
+	// redefine COMMAND settings.
+	if (interrupt) {
+		if (lub_string_nocasecmp(interrupt, "true") == 0)
+			clish_action__set_interrupt(action, BOOL_TRUE);
+		else
+			clish_action__set_interrupt(action, BOOL_FALSE);
+	}
 
 	/* expand */
 	if (expand)
