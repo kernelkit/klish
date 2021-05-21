@@ -295,7 +295,7 @@ static bool_t clish_shell_tinyrl_key_enter(tinyrl_t *this, int key)
 			errmsg = "Illegal parameter";
 			break;
 		case CLISH_LINE_PARTIAL:
-			errmsg = "The command is not completed";
+			errmsg = "Incompleted command";
 			break;
 		default:
 			errmsg = "Unknown problem";
@@ -315,8 +315,21 @@ static bool_t clish_shell_tinyrl_key_enter(tinyrl_t *this, int key)
 			"%s\n", fname, shell->current_file->line, line, errmsg);
 		}
 		// Wrong line must return bad retval for machine oriented proto
-		// Let retval=2 means wrong command
+		// Let retval=2 means wrong/incompleted command.
+		// Note there is some ugly architecture aspect - machine retval
+		// and logging are executed within clish_shell_execute()
+		// function also. The clish_shell_execute() is for completed
+		// commands but this function for wrong/incompleted commands.
 		clish_shell_machine_retval(shell, 2);
+		/* Call logging callback */
+		if (clish_shell__get_log(shell) &&
+			clish_shell_check_hook(context, CLISH_SYM_TYPE_LOG)) {
+			char *s = NULL;
+			lub_string_cat(&s, "Syntax error: ");
+			lub_string_cat(&s, line);
+			clish_shell_exec_log(context, s, 2);
+			lub_string_free(s);
+		}
 	}
 
 	tinyrl_done(this);

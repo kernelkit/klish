@@ -168,6 +168,11 @@ int clish_shell_execute(clish_context_t *context, char **out)
 	}
 
 	// Machine oriented protocol outputs return value
+	// Note there is some ugly architecture aspect - machine retval
+	// and logging are executed within clish_shell_tinyrl_key_enter()
+	// function also. This function is for completed
+	// commands but ...key_enter() do the same for wrong/incompleted
+	// commands.
 	clish_shell_machine_retval(this, result);
 
 	/* Unlock the lockfile */

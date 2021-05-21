@@ -84,10 +84,10 @@ clish_pargv_status_e clish_shell_parse(
 	const clish_command_t **ret_cmd, clish_pargv_t **pargv)
 {
 	clish_pargv_status_e result = CLISH_BAD_CMD;
-	clish_context_t context;
-	const clish_command_t *cmd;
+	clish_context_t context = {};
+	const clish_command_t *cmd = NULL;
 	lub_argv_t *argv = NULL;
-	unsigned int idx;
+	unsigned int idx = 0;
 
 	*ret_cmd = cmd = clish_shell_resolve_command(this, line);
 	if (!cmd)
@@ -106,6 +106,7 @@ clish_pargv_status_e clish_shell_parse(
 		clish_command__get_paramv(cmd),
 		argv, &idx, NULL, 0);
 	lub_argv_delete(argv);
+
 	if (CLISH_LINE_OK != result) {
 		clish_pargv_delete(*pargv);
 		*pargv = NULL;
@@ -143,13 +144,13 @@ clish_pargv_status_e clish_shell_parse_pargv(clish_pargv_t *pargv,
 	const lub_argv_t *argv,
 	unsigned *idx, clish_pargv_t *last, unsigned need_index)
 {
-	unsigned argc = lub_argv__get_count(argv);
-	unsigned index = 0;
-	unsigned nopt_index = 0;
+	unsigned int argc = lub_argv__get_count(argv);
+	unsigned int index = 0;
+	unsigned int nopt_index = 0;
 	clish_param_t *nopt_param = NULL;
-	unsigned i;
-	clish_pargv_status_e retval;
-	unsigned paramc = clish_paramv__get_count(paramv);
+	unsigned int i;
+	clish_pargv_status_e retval = CLISH_LINE_OK;
+	unsigned int paramc = clish_paramv__get_count(paramv);
 	int up_level = 0; /* Is it a first level of param nesting? */
 
 	assert(pargv);
@@ -186,7 +187,7 @@ clish_pargv_status_e clish_shell_parse_pargv(clish_pargv_t *pargv,
 		if (last && (*idx == need_index) &&
 			(NULL == clish_pargv_find_arg(pargv, clish_param__get_name(param)))) {
 			if (is_switch) {
-				unsigned rec_paramc = clish_param__get_param_count(param);
+				unsigned int rec_paramc = clish_param__get_param_count(param);
 				for (i = 0; i < rec_paramc; i++) {
 					cparam = clish_param__get_param(param, i);
 					if (!cparam)
@@ -226,7 +227,7 @@ clish_pargv_status_e clish_shell_parse_pargv(clish_pargv_t *pargv,
 			char *validated = NULL;
 			clish_paramv_t *rec_paramv =
 			    clish_param__get_paramv(param);
-			unsigned rec_paramc =
+			unsigned int rec_paramc =
 			    clish_param__get_param_count(param);
 
 			/* Save the index of last non-option parameter
@@ -328,8 +329,8 @@ clish_pargv_status_e clish_shell_parse_pargv(clish_pargv_t *pargv,
 
 	/* Check for non-optional parameters without values */
 	if ((*idx >= argc) && (index < paramc)) {
-		unsigned j = index;
-		const clish_param_t *param;
+		unsigned int j = index;
+		const clish_param_t *param = NULL;
 		while (j < paramc) {
 			param = clish_paramv__get_param(paramv, j++);
 			if (BOOL_TRUE != clish_param__get_optional(param))
@@ -388,6 +389,12 @@ clish_pargv_status_e clish_shell_parse_pargv(clish_pargv_t *pargv,
 		clish_pargv_insert(pargv, param, args);
 		lub_string_free(args);
 	}
+
+	/* If command has no actions at all consider it as incompleted.
+	 * Often it's a command parts like "no" prefix for "no iface" command.
+	 */
+	if (clish_command_is_incomplete(cmd))
+		return CLISH_LINE_PARTIAL;
 
 	return CLISH_LINE_OK;
 }
