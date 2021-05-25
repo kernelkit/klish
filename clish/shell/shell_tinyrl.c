@@ -224,11 +224,11 @@ static bool_t clish_shell_tinyrl_key_enter(tinyrl_t *this, int key)
 {
 	clish_context_t *context = tinyrl__get_context(this);
 	clish_shell_t *shell = clish_context__get_shell(context);
-	const clish_command_t *cmd = NULL;
 	const char *line = tinyrl__get_line(this);
 	bool_t result = BOOL_FALSE;
 	char *errmsg = NULL;
-	tinyrl_history_t *history;
+	tinyrl_history_t *history = NULL;
+	clish_pargv_status_e arg_status = CLISH_LINE_OK;
 
 	// Increment line counter
 	if (shell->current_file)
@@ -241,11 +241,20 @@ static bool_t clish_shell_tinyrl_key_enter(tinyrl_t *this, int key)
 		return BOOL_TRUE;
 	}
 
-	// Resolve command
-	cmd = clish_shell_resolve_command(shell, line);
-	// Try to complete command if it's not found
-	if (!cmd) {
+	// Workaround on ugly history.
+	// The line can be the pointer to history entry. Now we must fix it
+	// and copy string to real buffer.
+	tinyrl_changed_line(this);
+	line = tinyrl__get_line(this);
+
+	// Parse line
+	arg_status = clish_shell_parse(shell,
+		line, &context->cmd, &context->pargv);
+
+	// If command is incompleted then try to autocomplete it
+	if (arg_status != CLISH_LINE_OK) {
 		tinyrl_match_e status = clish_shell_tinyrl_complete(this);
+
 		switch (status) {
 		case TINYRL_MATCH:
 		case TINYRL_MATCH_WITH_EXTENSIONS:
@@ -253,22 +262,18 @@ static bool_t clish_shell_tinyrl_key_enter(tinyrl_t *this, int key)
 			// Re-fetch the line as it may have changed
 			// due to auto-completion
 			line = tinyrl__get_line(this);
-			cmd = clish_shell_resolve_command(shell, line);
+			// Try to parse line another time after autocompletion
+			arg_status = clish_shell_parse(shell,
+				line, &context->cmd, &context->pargv);
 			// We have had a match but it is not a command
 			// so add a space so as not to confuse the user
-			if (!cmd)
+			if (!context->cmd)
 				result = tinyrl_insert_text(this, " ");
 			break;
 		default:
-			errmsg = "Unknown command";
 			break;
 		}
 	}
-	// Workaround on ugly history.
-	// The line can be the pointer to history entry. Now we must fix it
-	// and copy string to real buffer.
-	tinyrl_changed_line(this);
-	line = tinyrl__get_line(this);
 
 	// Add any not-null line to history
 	if (tinyrl__get_isatty(this)) {
@@ -277,10 +282,7 @@ static bool_t clish_shell_tinyrl_key_enter(tinyrl_t *this, int key)
 	}
 	tinyrl_multi_crlf(this);
 
-	if (cmd) {
-		clish_pargv_status_e arg_status;
-		arg_status = clish_shell_parse(shell,
-			line, &context->cmd, &context->pargv);
+	if (context->cmd) {
 		switch (arg_status) {
 		case CLISH_LINE_OK:
 			result = BOOL_TRUE;
@@ -301,6 +303,8 @@ static bool_t clish_shell_tinyrl_key_enter(tinyrl_t *this, int key)
 			errmsg = "Unknown problem";
 			break;
 		}
+	} else {
+		errmsg = "Unknown command";
 	}
 
 	// If error then print message
