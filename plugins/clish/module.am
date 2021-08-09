@@ -1,4 +1,4 @@
-lib_LTLIBRARIES+= clish_plugin_clish.la
+lib_LTLIBRARIES += clish_plugin_clish.la
 clish_plugin_clish_la_SOURCES =
 clish_plugin_clish_la_DEPENDENCIES = \
 	libclish.la \
@@ -8,9 +8,7 @@ clish_plugin_clish_la_DEPENDENCIES = \
 clish_plugin_clish_la_LIBADD = \
 	$(clish_plugin_clish_la_DEPENDENCIES)
 
-clish_plugin_clish_la_LDFLAGS	 = -avoid-version -module
-#clish_plugin_clish_la_LDFLAGS	 = -avoid-version -module -shared
-#clish_plugin_clish_la_LDFLAGS	+= -export-symbols-regex "^clish_plugin_lua_"
+clish_plugin_clish_la_LDFLAGS = -avoid-version -module
 
 clish_plugin_clish_la_SOURCES += \
 	plugins/clish/builtin_init.c \

@@ -6,13 +6,15 @@ bin_PROGRAMS += \
 	bin/sigexec
 
 bin_clish_SOURCES = bin/clish.c
+EXTRA_bin_clish_DEPENDENCIES = \
+	@CLISH_PLUGIN_BUILTIN_LIBS@
 bin_clish_LDADD = \
 	libclish.la \
 	libkonf.la \
 	libtinyrl.la \
 	liblub.la \
-	$(LIBOBJS) \
-	@CLISH_PLUGIN_BUILTIN_LIBS@
+	@CLISH_PLUGIN_BUILTIN_LIBS@ \
+	$(LIBOBJS)
 
 bin_konfd_SOURCES = bin/konfd.c
 bin_konfd_LDADD = \
