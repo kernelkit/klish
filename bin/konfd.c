@@ -47,6 +47,7 @@
 #include "lub/argv.h"
 #include "lub/string.h"
 #include "lub/log.h"
+#include "lub/db.h"
 
 #ifndef VERSION
 #define VERSION 1.2.2
@@ -689,13 +690,14 @@ static int opts_parse(int argc, char *argv[], struct options *opts)
 			break;
 		case 'u': {
 #ifdef HAVE_PWD_H
-			struct passwd *pwd = getpwnam(optarg);
+			struct passwd *pwd = lub_db_getpwnam(optarg);
 			if (!pwd) {
 				fprintf(stderr, "Error: Can't identify user \"%s\"\n",
 					optarg);
 				return -1;
 			}
 			opts->uid = pwd->pw_uid;
+			free(pwd);
 #else
 			fprintf(stderr, "The --user option is not supported.\n");
 			return -1;
@@ -704,13 +706,14 @@ static int opts_parse(int argc, char *argv[], struct options *opts)
 		}
 		case 'g': {
 #ifdef HAVE_GRP_H
-			struct group *grp = getgrnam(optarg);
+			struct group *grp = lub_db_getgrnam(optarg);
 			if (!grp) {
 				fprintf(stderr, "Can't identify group \"%s\"\n",
 					optarg);
 				return -1;
 			}
 			opts->gid = grp->gr_gid;
+			free(grp);
 #else
 			fprintf(stderr, "The --group option is not supported.\n");
 			return -1;

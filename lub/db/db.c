@@ -14,7 +14,7 @@ struct passwd *lub_db_getpwnam(const char *name)
 {
 	long int size;
 	char *buf;
-	struct passwd *pwbuf; 
+	struct passwd *pwbuf;
 	struct passwd *pw = NULL;
 	int res = 0;
 
