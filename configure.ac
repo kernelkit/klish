@@ -88,6 +88,16 @@ AC_ARG_ENABLE(legacy,
 AM_CONDITIONAL(LEGACY,test x$enable_legacy = xyes)
 
 ################################
+# Deal with NSS glibc engine
+################################
+AC_ARG_ENABLE(nss,
+              [AS_HELP_STRING([--enable-nss],
+                              [Support for glibc NSS-dependent functions line getpwnam() [default=yes]])],
+              [],
+              [enable_nss=yes])
+AM_CONDITIONAL(DISABLE_NSS,test x$enable_nss != xyes)
+
+################################
 # Check for Lua support
 ################################
 AC_ARG_WITH(lua,
