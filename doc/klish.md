@@ -1682,7 +1682,7 @@ $ make LDFLAGS+="-all-static"
 
 The LDFLAGS is global so shared libraries can't be build and building of shared libraries must be disabled.
 
-## Leak of dlopen()
+### Leak of dlopen()
 
 If target system doesn't support dlopen() then configure script will configure building process to don't use dlopen() (and other dl functions) but link to plugin's shared objects.
 
@@ -1693,6 +1693,11 @@ $ ac_cv_header_dlfcn_h=no ./configure --prefix=/usr --with-lua --disable-shared
 $ make LDFLAGS+="-all-static"
 ```
 
+### Glibc's NSS
+
+The standard glibc uses dlopen() to implement getpwnam()-like and some other functions. The cause is NSS engine. It allows to use different backends (like LDAP, NIS. etc) for name resolution. The implementations of backends are in the separate shared objects. So NSS-depended functions can't be statically linked in common case (note glibc can be build with special option to enable NSS static linkage).
+
+The klish configure script has a special option `--disable-nss` to don't use standard NSS functions. The functions like getpwnam() will simulate standard behaviour. In this mode functions can't resolve user/group names but take only the numbers like '0' for root. But klish can be build fully statically in this mode. Implemented since klish-2.2.3.
 
 
 
