@@ -364,10 +364,20 @@ int clish_shell_exec_action(clish_context_t *context, char **out)
 	sa.sa_handler = sig_ignore_handler; /* Empty signal handler */
 	sigaction(SIGINT, &sa, &old_sigint);
 	sigaction(SIGQUIT, &sa, &old_sigquit);
-	sigaction(SIGHUP, &sa, &old_sighup);
+
 	/* Block signals for children processes. The block state is inherited. */
 	if (!intr) {
 		sigset_t sigs;
+
+		// Ignore SIGHUP only for non-interruptible commands.
+		// Because these commands must be atomic. And when terminal
+		// is closed command must finish its actions. In the same
+		// time when command is interactive and terminal is closed
+		// klish must not ignore SIGHUP. Else interactive command
+		// will be executed continuosly because klish will not stop
+		// on terminal closing.
+		sigaction(SIGHUP, &sa, &old_sighup);
+
 		sigemptyset(&sigs);
 		sigaddset(&sigs, SIGINT);
 		sigaddset(&sigs, SIGQUIT);
@@ -401,10 +411,13 @@ int clish_shell_exec_action(clish_context_t *context, char **out)
 		   the sleep() is not nice too. Report bug if clish will
 		   get the SIGINT after non-interruptable action.
 		*/
+
+		sigaction(SIGHUP, &old_sighup, NULL);
 	}
+
+	// Restore signals
 	sigaction(SIGINT, &old_sigint, NULL);
 	sigaction(SIGQUIT, &old_sigquit, NULL);
-	sigaction(SIGHUP, &old_sighup, NULL);
 
 	lub_string_free(script);
 
