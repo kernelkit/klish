@@ -618,6 +618,12 @@ void clish_shell__stifle_history(clish_shell_t *this, unsigned int stifle)
 	tinyrl__stifle_history(this->tinyrl, stifle);
 }
 
+/*----------------------------------------------------------*/
+void clish_shell__disable_echo(clish_shell_t *this)
+{
+	tinyrl_disable_echo(this->tinyrl, '\0');
+}
+
 CLISH_SET(shell, unsigned int, idle_timeout);
 CLISH_SET(shell, bool_t, interactive);
 CLISH_GET(shell, bool_t, interactive);

@@ -62,6 +62,7 @@ int main(int argc, char **argv)
 	bool_t utf8 = BOOL_FALSE;
 	bool_t bit8 = BOOL_FALSE;
 	bool_t log = BOOL_FALSE;
+	bool_t no_echo = BOOL_FALSE;
 	int log_facility = LOG_LOCAL0;
 	bool_t dryrun = BOOL_FALSE;
 	bool_t dryrun_config = BOOL_FALSE;
@@ -86,7 +87,7 @@ int main(int argc, char **argv)
 	struct sigaction sigpipe_act;
 	sigset_t sigpipe_set;
 
-	static const char *shortopts = "hvs:ledx:w:i:bqu8oO:kKt:c:f:z:p:";
+	static const char *shortopts = "hvs:ledx:w:i:bqu8oO:kKt:c:f:z:p:E";
 #ifdef HAVE_GETOPT_LONG
 	static const struct option longopts[] = {
 		{"help",	0, NULL, 'h'},
@@ -94,6 +95,7 @@ int main(int argc, char **argv)
 		{"socket",	1, NULL, 's'},
 		{"lockless",	0, NULL, 'l'},
 		{"stop-on-error", 0, NULL, 'e'},
+		{"no-echo",	0, NULL, 'E'},
 		{"dry-run",	0, NULL, 'd'},
 		{"xml-path",	1, NULL, 'x'},
 		{"view",	1, NULL, 'w'},
@@ -162,6 +164,9 @@ int main(int argc, char **argv)
 			break;
 		case '8':
 			bit8 = BOOL_TRUE;
+			break;
+		case 'E':
+			no_echo = BOOL_TRUE;
 			break;
 		case 'o':
 			log = BOOL_TRUE;
@@ -279,6 +284,8 @@ int main(int argc, char **argv)
 	/* Set startup viewid */
 	if (viewid)
 		clish_shell__set_startup_viewid(shell, viewid);
+	if (no_echo)
+		clish_shell__disable_echo(shell);
 	/* Set UTF-8 or 8-bit mode */
 	if (utf8 || bit8)
 		clish_shell__set_utf8(shell, utf8);
@@ -413,6 +420,7 @@ static void help(int status, const char *argv0)
 			"\n\t\tof the konfd daemon.\n");
 		printf("\t-l, --lockless\tDon't use locking mechanism.\n");
 		printf("\t-e, --stop-on-error\tStop script execution on error.\n");
+		printf("\t-E, --no-echo\tDisable echo.\n");
 		printf("\t-b, --background\tStart shell using non-interactive mode.\n");
 		printf("\t-q, --quiet\tDisable echo while executing commands\n\t\tfrom the file stream.\n");
 		printf("\t-d, --dry-run\tDon't actually execute ACTION scripts.\n");
