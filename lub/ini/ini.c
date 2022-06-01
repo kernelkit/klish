@@ -48,8 +48,23 @@ void lub_ini_free(lub_ini_t *this)
 /*--------------------------------------------------------- */
 void lub_ini_add(lub_ini_t *this, lub_pair_t *pair)
 {
+	lub_list_node_t *node = NULL;
+	lub_pair_t *pair_in_list = NULL;
+
 	assert(this);
-	lub_list_add(this->list, pair);
+
+	node = lub_list_find_add(this->list, pair);
+	if (!node)
+		return; // Strange error
+	// INI file can contain multiple strings with the same keys. We will
+	// consider last entry as actual.
+	pair_in_list = (lub_pair_t *)lub_list_node__get_data(node);
+	// Check for duplicate entry
+	if (pair_in_list != pair) {
+		// Set actual value
+		lub_pair__set_value(pair_in_list, lub_pair__get_value(pair));
+		lub_pair_free(pair);
+	}
 }
 
 /*--------------------------------------------------------- */
