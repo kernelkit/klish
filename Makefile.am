@@ -40,7 +40,7 @@ EXTRA_DIST = \
 	debian \
 	clish.xsd \
 	LICENCE \
-	README \
+	README.md \
 	CHANGES \
 	ISSUES
 
