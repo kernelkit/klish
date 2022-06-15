@@ -38,7 +38,9 @@ Mailing list : http://groups.google.com/group/klish
 
 Dev mailing list : http://groups.google.com/group/klish-dev
 
-Download : https://src.libcode.org/pkun/klish/archive/2.2.5.tar.gz
+Download : https://src.libcode.org/download/klish/
+
+Latest release : https://src.libcode.org/download/klish/klish-2.2.5.tar.xz
 
 Author : Serj Kalichev `serj.kalichev(_at_)libcode.org`
 
