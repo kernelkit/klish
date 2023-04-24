@@ -1,4 +1,5 @@
 #define _GNU_SOURCE
+#include <grp.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -451,6 +452,7 @@ static int create_listen_unix_sock(const char *path)
 	int sock = -1;
 	int opt = 1;
 	struct sockaddr_un laddr = {};
+	struct group *gr;
 
 	assert(path);
 	if (!path)
@@ -480,6 +482,14 @@ static int create_listen_unix_sock(const char *path)
 		unlink(path);
 		syslog(LOG_ERR, "Can't listen on socket %s: %s\n", path, strerror(errno));
 		goto err;
+	}
+
+	gr = getgrnam("wheel");
+	if (gr) {
+		if (chown(path, -1, gr->gr_gid))
+			syslog(LOG_ERR, "Failed chown(wheel) %s: %s", path, strerror(errno));
+		else
+			chmod(path, 0770);
 	}
 
 	return sock;
