@@ -174,6 +174,19 @@ bool_t tinyrl_bind_key(tinyrl_t *tinyrl, int key, tinyrl_key_func_t *fn)
 	return BOOL_TRUE;
 }
 
+bool_t tinyrl_unbind_key(tinyrl_t *tinyrl, int key)
+{
+	assert(tinyrl);
+	if (!tinyrl)
+		return BOOL_FALSE;
+	if ((key < 0) || (key > 255))
+		return BOOL_FALSE;
+
+	tinyrl->handlers[key] = tinyrl_key_default;
+
+	return BOOL_TRUE;
+}
+
 
 void tinyrl_set_hotkey_fn(tinyrl_t *tinyrl, tinyrl_key_func_t *fn)
 {
