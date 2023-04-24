@@ -431,6 +431,7 @@ static bool_t process_hotkey_param(ctx_t *ctx, const faux_msg_t *msg)
 		if (!cmd)
 			continue;
 		ctx->hotkeys[code] = cmd;
+		tinyrl_unbind_key(ctx->tinyrl, code);
 	}
 
 	return BOOL_TRUE;

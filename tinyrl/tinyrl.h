@@ -70,6 +70,7 @@ tinyrl_t *tinyrl_new(FILE *istream, FILE *ostream,
 void tinyrl_free(tinyrl_t *tinyrl);
 
 bool_t tinyrl_bind_key(tinyrl_t *tinyrl, int key, tinyrl_key_func_t *fn);
+bool_t tinyrl_unbind_key(tinyrl_t *tinyrl, int key);
 void tinyrl_set_hotkey_fn(tinyrl_t *tinyrl, tinyrl_key_func_t *fn);
 void tinyrl_set_istream(tinyrl_t *tinyrl, FILE *istream);
 FILE *tinyrl_istream(const tinyrl_t *tinyrl);
