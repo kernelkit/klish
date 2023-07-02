@@ -460,7 +460,11 @@ static int create_listen_unix_sock(const char *path)
 		goto err;
 	}
 	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
-		syslog(LOG_ERR, "Can't set socket options: %s", strerror(errno));
+		syslog(LOG_ERR, "Can't set SO_REUSEADDR socket option: %s", strerror(errno));
+		goto err;
+	}
+	if (setsockopt(sock, SOL_SOCKET, SO_PASSCRED, &opt, sizeof(opt))) {
+		syslog(LOG_ERR, "Can't set SO_PASSCRED socket option: %s", strerror(errno));
 		goto err;
 	}
 

@@ -293,8 +293,10 @@ static bool_t ktpd_session_process_auth(ktpd_session_t *ktpd, faux_msg_t *msg)
 		ktpd->exit = BOOL_TRUE;
 		return BOOL_FALSE;
 	}
+
 	ksession_set_pid(ktpd->session, ucred.pid);
 	ksession_set_uid(ktpd->session, ucred.uid);
+	ksession_set_gid(ktpd->session, ucred.gid);
 	user = faux_sysdb_name_by_uid(ucred.uid);
 	ksession_set_user(ktpd->session, user);
 	faux_str_free(user);
@@ -330,6 +332,28 @@ static bool_t ktpd_session_process_auth(ktpd_session_t *ktpd, faux_msg_t *msg)
 	faux_msg_free(ack);
 
 	ktpd->state = KTPD_SESSION_STATE_IDLE;
+
+#if 0
+	/*
+	 * Does not work currently, not sure why, but there's a lot of
+	 * files in /etc that do not have the correct group ('wheel')
+	 * write perms.   I'm guessing there's more.  Example run:
+	 *
+	 *   admin@infix-12-34-56:/config/> set system hostname fooza
+	 *   admin@infix-12-34-56:/config/> leave
+	 *   Error: Unable to commit candidate to running (3)
+	 *
+	 * The idea is to drop perms in the forked off klishd child and
+	 * do all system configuration as that user, e.g., admin.  But
+	 * a guest user should also be able to log in without getting
+	 * root privleges.
+	 */
+	if (setgid(ucred.gid) || setuid(ucred.uid)) {
+		syslog(LOG_ERR, "Failed dropping privileges to (UID:%d GID:%d): %s",
+		       ucred.uid, ucred.gid, strerror(errno));
+		return BOOL_FALSE;
+	}
+#endif
 
 	return BOOL_TRUE;
 }

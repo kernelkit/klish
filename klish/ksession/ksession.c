@@ -20,6 +20,7 @@ struct ksession_s {
 	size_t term_height;
 	pid_t pid;
 	uid_t uid;
+	gid_t gid;
 	char *user;
 	bool_t isatty_stdin;
 	bool_t isatty_stdout;
@@ -52,6 +53,10 @@ KSET(session, pid_t, pid);
 // UID of client (Unix socket peer)
 KGET(session, uid_t, uid);
 KSET(session, uid_t, uid);
+
+// GID of client (Unix socket peer)
+KGET(session, gid_t, gid);
+KSET(session, gid_t, gid);
 
 // Client user name (Unix socket peer)
 KSET_STR(session, user);
@@ -110,6 +115,7 @@ ksession_t *ksession_new(kscheme_t *scheme, const char *start_entry)
 	// Peer data
 	session->pid = -1;
 	session->uid = -1;
+	session->gid = -1;
 	session->user = NULL;
 	session->isatty_stdin = BOOL_FALSE;
 	session->isatty_stdout = BOOL_FALSE;
