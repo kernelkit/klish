@@ -42,6 +42,10 @@ bool_t ksession_set_pid(ksession_t *session, pid_t pid);
 uid_t ksession_uid(const ksession_t *session);
 bool_t ksession_set_uid(ksession_t *session, uid_t uid);
 
+// GID of client (Unix socket peer)
+gid_t ksession_gid(const ksession_t *session);
+bool_t ksession_set_gid(ksession_t *session, gid_t gid);
+
 // Client user name (Unix socket peer)
 const char *ksession_user(const ksession_t *session);
 bool_t ksession_set_user(ksession_t *session, const char *user);
