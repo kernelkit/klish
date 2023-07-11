@@ -167,10 +167,10 @@ const char *kpargv_status_decode(kpargv_status_e status)
 
 	switch (status) {
 	case KPARSE_OK:
-		s = "Ok";
+		s = "OK";
 		break;
 	case KPARSE_NOTFOUND:
-		s = "Not found";
+		s = "Command not found";
 		break;
 	case KPARSE_ERROR:
 		s = "Illegal command";
