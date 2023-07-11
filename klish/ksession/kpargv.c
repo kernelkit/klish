@@ -167,25 +167,25 @@ const char *kpargv_status_decode(kpargv_status_e status)
 
 	switch (status) {
 	case KPARSE_OK:
-		s = "Ok";
+		s = "OK";
 		break;
 	case KPARSE_INPROGRESS:
-		s = "In progress";
+		s = "command in progress";
 		break;
 	case KPARSE_NOTFOUND:
-		s = "Not found";
+		s = "command not found";
 		break;
 	case KPARSE_INCOMPLETED:
-		s = "Incompleted";
+		s = "incomplete command";
 		break;
 	case KPARSE_ILLEGAL:
-		s = "Illegal";
+		s = "invalid command";
 		break;
 	case KPARSE_NOACTION:
-		s = "Has no action";
+		s = "command has no action";
 		break;
 	default: // ERROR/MAX/NONE
-		s = "Error";
+		s = "error";
 		break;
 	}
 
