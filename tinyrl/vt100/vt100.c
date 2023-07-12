@@ -32,6 +32,8 @@ static vt100_decode_t esc_map[] = {
 	{"[D", VT100_CURSOR_LEFT},
 	{"[H", VT100_HOME},
 	{"[1~", VT100_HOME},
+	{"[1;5C", VT100_CURSOR_FDWORD},
+	{"[1;5D", VT100_CURSOR_BKWORD},
 	{"[F", VT100_END},
 	{"[4~", VT100_END},
 	{"[2~", VT100_INSERT},

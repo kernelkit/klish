@@ -60,6 +60,8 @@ typedef enum {
 	VT100_CURSOR_DOWN,	// Move the cursor down
 	VT100_CURSOR_LEFT,	// Move the cursor left
 	VT100_CURSOR_RIGHT,	// Move the cursor right
+	VT100_CURSOR_FDWORD,	// Move the cursor right one word
+	VT100_CURSOR_BKWORD,	// Move the cursor left one word
 	VT100_HOME,		// Move the cursor to the beginning of the line
 	VT100_END,		// Move the cursor to the end of the line
 	VT100_INSERT,		// No action at the moment

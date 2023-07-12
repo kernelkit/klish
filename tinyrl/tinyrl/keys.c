@@ -237,6 +237,17 @@ static int is_prev_space(tinyrl_t *tinyrl)
 	return isspace(tinyrl->line.str[tinyrl->line.pos - 1]);
 }
 
+static int is_next_space(tinyrl_t *tinyrl)
+{
+	if (tinyrl->utf8) {
+		off_t new_pos = utf8_move_right(tinyrl->line.str, tinyrl->line.pos);
+
+		return iswspace(tinyrl->line.str[new_pos]);
+	}
+
+	return isspace(tinyrl->line.str[tinyrl->line.pos + 1]);
+}
+
 bool_t tinyrl_key_backword(tinyrl_t *tinyrl, unsigned char key)
 {
 	(void)key;
@@ -248,6 +259,39 @@ bool_t tinyrl_key_backword(tinyrl_t *tinyrl, unsigned char key)
 	// delete word before cusor
 	while (tinyrl->line.pos > 0 && !is_prev_space(tinyrl))
 		tinyrl_key_backspace(tinyrl, KEY_BS);
+
+	return BOOL_TRUE;
+}
+
+bool_t tinyrl_key_left_word(tinyrl_t *tinyrl, unsigned char key)
+{
+	(void)key;
+
+	while (tinyrl->line.pos > 0 && is_prev_space(tinyrl))
+		tinyrl_key_left(tinyrl, key);
+
+	while (tinyrl->line.pos > 0 && !is_prev_space(tinyrl))
+		tinyrl_key_left(tinyrl, key);
+
+	return BOOL_TRUE;
+}
+
+bool_t tinyrl_key_right_word(tinyrl_t *tinyrl, unsigned char key)
+{
+	int adjust = 0;
+
+	(void)key;
+
+	while (tinyrl->line.pos < tinyrl->line.len && !is_next_space(tinyrl))
+		tinyrl_key_right(tinyrl, key);
+
+	while (tinyrl->line.pos < tinyrl->line.len && is_next_space(tinyrl)) {
+		adjust = 1;
+		tinyrl_key_right(tinyrl, key);
+	}
+
+	if (adjust)
+		tinyrl_key_right(tinyrl, key);
 
 	return BOOL_TRUE;
 }
