@@ -9,6 +9,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <unistd.h>
+#include <wctype.h>
 
 #include <faux/str.h>
 
@@ -21,11 +22,11 @@
  * @param [out] sym_out Resulting wchar.
  * @return Number of bytes for current UTF-8 symbol.
  */
-ssize_t utf8_to_wchar(const char *sp, unsigned long *sym_out)
+ssize_t utf8_to_wchar(const char *sp, wint_t *sym_out)
 {
 	int i = 0;
 	int octets = 0; // Number of 0x10xxxxxx UTF-8 sequence bytes
-	unsigned long sym = 0;
+	wint_t sym = 0;
 	const unsigned char *p = (const unsigned char *)sp;
 
 	if (sym_out)
@@ -226,7 +227,7 @@ ssize_t utf8_nsyms(const char *str, size_t len)
 		return -1;
 
 	while ((pos < (str + len)) && (*pos != '\0')) {
-		unsigned long sym = 0;
+		wint_t sym = 0;
 
 		// ASCII char
 		if ((UTF8_7BIT_MASK & *pos) == 0) {
