@@ -40,6 +40,10 @@ static vt100_decode_t esc_map[] = {
 	{"[3~", VT100_DELETE},
 	{"[5~", VT100_PGUP},
 	{"[6~", VT100_PGDOWN},
+	{"b", VT100_CURSOR_BKWORD},
+	{"f", VT100_CURSOR_FDWORD},
+	{"\177", VT100_DEL_BKWORD},
+	{"d", VT100_DEL_FDWORD},
 };
 
 
