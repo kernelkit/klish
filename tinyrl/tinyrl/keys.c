@@ -67,19 +67,19 @@ bool_t tinyrl_key_end_of_line(tinyrl_t *tinyrl, unsigned char key)
 
 bool_t tinyrl_key_kill(tinyrl_t *tinyrl, unsigned char key)
 {
-/*
+	size_t len;
+
+	(void)key;
+
 	// release any old kill string 
-	lub_string_free(tinyrl->kill_string);
+	faux_free(tinyrl->kill_string);
 
 	// store the killed string 
-	tinyrl->kill_string = lub_string_dup(&tinyrl->buffer[tinyrl->point]);
+	tinyrl->kill_string = strdup(&tinyrl->line.str[tinyrl->line.pos]);
 
-	// delete the text to the end of the line 
-	tinyrl_delete_text(tinyrl, tinyrl->point, tinyrl->end);
-*/
-	// Happy compiler
-	tinyrl = tinyrl;
-	key = key;
+	// delete the text to the end of the line
+	len = strlen(&tinyrl->line.str[tinyrl->line.pos]);
+	tinyrl_line_delete(tinyrl, tinyrl->line.pos, len);
 
 	return BOOL_TRUE;
 }
@@ -87,18 +87,14 @@ bool_t tinyrl_key_kill(tinyrl_t *tinyrl, unsigned char key)
 
 bool_t tinyrl_key_yank(tinyrl_t *tinyrl, unsigned char key)
 {
-	bool_t result = BOOL_FALSE;
-/*
+	(void)key;
+
 	if (tinyrl->kill_string) {
 		// insert the kill string at the current insertion point 
-		result = tinyrl_insert_text(tinyrl, tinyrl->kill_string);
+		return tinyrl_line_insert(tinyrl, tinyrl->kill_string, strlen(tinyrl->kill_string));
 	}
-*/
-	// Happy compiler
-	tinyrl = tinyrl;
-	key = key;
 
-	return result;
+	return BOOL_TRUE;
 }
 
 
@@ -271,30 +267,25 @@ bool_t tinyrl_key_clear_screen(tinyrl_t *tinyrl, unsigned char key)
 
 bool_t tinyrl_key_erase_line(tinyrl_t *tinyrl, unsigned char key)
 {
-/*	unsigned int end;
+	size_t len;
+
+	(void)key;
 
 	// release any old kill string 
-	lub_string_free(tinyrl->kill_string);
+	faux_free(tinyrl->kill_string);
 
-	if (!tinyrl->point) {
+	if (!tinyrl->line.pos) {
 		tinyrl->kill_string = NULL;
 		return BOOL_TRUE;
 	}
 
-	end = tinyrl->point - 1;
-
-	// store the killed string 
-	tinyrl->kill_string = malloc(tinyrl->point + 1);
-	memcpy(tinyrl->kill_string, tinyrl->buffer, tinyrl->point);
-	tinyrl->kill_string[tinyrl->point] = '\0';
+	// store the killed string
+	len = strlen(tinyrl->line.str) + 1;
+	tinyrl->kill_string = malloc(len);
+	memcpy(tinyrl->kill_string, tinyrl->line.str, len);
 
 	// delete the text from the start of the line 
-	tinyrl_delete_text(tinyrl, 0, end);
-	tinyrl->point = 0;
-*/
-	// Happy compiler
-	tinyrl = tinyrl;
-	key = key;
+	tinyrl_reset_line(tinyrl);
 
 	return BOOL_TRUE;
 }
