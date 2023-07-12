@@ -55,6 +55,7 @@ struct tinyrl_s {
 	struct termios default_termios; // Saved terminal settings
 	unsigned int width; // Terminal width
 	bool_t utf8; // Is encoding UTF-8 flag. Default is UTF-8
+	char *kill_string;
 	line_t line; // Current line
 	line_t last; // Last (previous) line
 	char *prompt;
