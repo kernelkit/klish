@@ -67,7 +67,9 @@ typedef enum {
 	VT100_INSERT,		// No action at the moment
 	VT100_DELETE,		// Delete character on the right
 	VT100_PGUP,		// No action at the moment
-	VT100_PGDOWN		// No action at the moment
+	VT100_PGDOWN,		// No action at the moment
+	VT100_DEL_BKWORD,	// Delete word to the left
+	VT100_DEL_FDWORD,	// Delete word to the right
 } vt100_esc_e;
 
 
