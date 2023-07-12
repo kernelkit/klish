@@ -230,26 +230,30 @@ bool_t tinyrl_key_delete(tinyrl_t *tinyrl, unsigned char key)
 	return BOOL_TRUE;
 }
 
+static int is_prev_space(tinyrl_t *tinyrl)
+{
+	if (tinyrl->utf8) {
+		off_t new_pos = utf8_move_left(tinyrl->line.str, tinyrl->line.pos);
+
+		return iswspace(tinyrl->line.str[new_pos]);
+	}
+
+	return isspace(tinyrl->line.str[tinyrl->line.pos - 1]);
+}
 
 bool_t tinyrl_key_backword(tinyrl_t *tinyrl, unsigned char key)
 {
-	bool_t result = BOOL_FALSE;
-/*
-    // remove current whitespace before cursor 
-	while (tinyrl->point > 0 && isspace(tinyrl->line[tinyrl->point - 1]))
-        tinyrl_key_backspace(tinyrl, KEY_BS);
+	(void)key;
 
-    // delete word before cusor 
-	while (tinyrl->point > 0 && !isspace(tinyrl->line[tinyrl->point - 1]))
-        tinyrl_key_backspace(tinyrl, KEY_BS);
+	// remove current whitespace before cursor
+	while (tinyrl->line.pos > 0 && is_prev_space(tinyrl))
+		tinyrl_key_backspace(tinyrl, KEY_BS);
 
-	result = BOOL_TRUE;
-*/
-	// Happy compiler
-	tinyrl = tinyrl;
-	key = key;
+	// delete word before cusor
+	while (tinyrl->line.pos > 0 && !is_prev_space(tinyrl))
+		tinyrl_key_backspace(tinyrl, KEY_BS);
 
-	return result;
+	return BOOL_TRUE;
 }
 
 
