@@ -1,4 +1,5 @@
 #include <termios.h>
+#include <wctype.h>
 
 #include <faux/faux.h>
 
@@ -8,7 +9,7 @@
 
 
 // UTF-8 functions
-ssize_t utf8_to_wchar(const char *sp, unsigned long *sym_out);
+ssize_t utf8_to_wchar(const char *sp, wint_t *sym_out);
 bool_t utf8_wchar_is_cjk(unsigned long sym);
 off_t utf8_move_left(const char *line, off_t cur_pos);
 off_t utf8_move_right(const char *line, off_t cur_pos);
