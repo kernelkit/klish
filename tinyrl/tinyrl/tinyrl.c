@@ -516,6 +516,12 @@ bool_t tinyrl_esc_seq(tinyrl_t *tinyrl, const char *esc_seq)
 	case VT100_CURSOR_BKWORD:
 		result = tinyrl_key_left_word(tinyrl, 0);
 		break;
+	case VT100_DEL_FDWORD:
+		result = tinyrl_key_delword(tinyrl, 0);
+		break;
+	case VT100_DEL_BKWORD:
+		result = tinyrl_key_backword(tinyrl, 0);
+		break;
 	case VT100_HOME:
 		result = tinyrl_key_start_of_line(tinyrl, 0);
 		break;

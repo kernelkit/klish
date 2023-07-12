@@ -28,6 +28,7 @@ bool_t tinyrl_key_left(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_right(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_backspace(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_backword(tinyrl_t *tinyrl, unsigned char key);
+bool_t tinyrl_key_delword(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_delete(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_left_word(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_right_word(tinyrl_t *tinyrl, unsigned char key);
