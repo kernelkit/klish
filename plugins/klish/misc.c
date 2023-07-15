@@ -75,21 +75,37 @@ int klish_print(kcontext_t *context)
 	return 0;
 }
 
+static char *cwd(kcontext_t *context)
+{
+	kpath_levels_node_t *iter;
+	static char buf[256];
+	ksession_t *session;
+	klevel_t *level;
+	size_t len;
+
+	len = sizeof(buf);
+	memset(buf, 0, len);
+
+	session = kcontext_session(context);
+	if (!session)
+		return NULL;
+
+	iter = kpath_iter(ksession_path(session));
+	while ((level = kpath_each(&iter))) {
+		const char *nm = kentry_name(klevel_entry(level));
+
+		strncat(buf, "/", len--);
+		strncat(buf, nm, len);
+		len -= strlen(nm);
+	}
+
+	return buf;
+}
 
 // Symbol to show current path
 int klish_pwd(kcontext_t *context)
 {
-	kpath_t *path = NULL;
-	kpath_levels_node_t *iter = NULL;
-	klevel_t *level = NULL;
-
-	path = ksession_path(kcontext_session(context));
-	iter = kpath_iter(path);
-	while ((level = kpath_each(&iter))) {
-		printf("/%s", kentry_name(klevel_entry(level)));
-	}
-	printf("\n");
-
+	printf("%s\n", cwd(context));
 	return 0;
 }
 
@@ -138,6 +154,10 @@ int klish_prompt(kcontext_t *context)
 				faux_str_free(user);
 				break;
 				}
+			// Workdir (pwd)
+			case 'w':
+				faux_str_cat(&prompt, cwd(context));
+				break;
 			}
 			is_macro = BOOL_FALSE;
 			start = pos + 1;

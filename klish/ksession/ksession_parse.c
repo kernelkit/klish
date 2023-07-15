@@ -620,6 +620,8 @@ kexec_t *ksession_parse_for_local_exec(ksession_t *session,
 	kcontext_set_parent_pargv(context, parent_pargv);
 	// Service ACTIONs like PTYPE, CONDitions etc. doesn't need session
 	// data within context. Else it will be able to change path.
+	/* KernelKit override for %w patch to klish_prompt() */
+	kcontext_set_session(context, session);
 	kexec_add_contexts(exec, context);
 
 	faux_argv_free(argv);
