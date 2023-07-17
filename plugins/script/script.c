@@ -204,7 +204,6 @@ int script_script(kcontext_t *context)
 	pid_t cpid = -1;
 	int res = -1;
 	char *fifo_name = NULL;
-	FILE *wpipe = NULL;
 	char *command = NULL;
 	char *shebang = NULL;
 
@@ -223,7 +222,7 @@ int script_script(kcontext_t *context)
 	cpid = fork();
 	if (cpid == -1) {
 		fprintf(stderr, "Error: Can't fork the write process.\n"
-			"Error: The ACTION will be not executed.\n");
+			"Error: The ACTION will not be executed.\n");
 		unlink(fifo_name);
 		faux_str_free(fifo_name);
 		return -1;
@@ -231,14 +230,15 @@ int script_script(kcontext_t *context)
 
 	// Child: write to FIFO
 	if (cpid == 0) {
-		wpipe = fopen(fifo_name, "w");
+		FILE *fp = fopen(fifo_name, "w");
+
 		faux_str_free(fifo_name);
-		if (!wpipe)
+		if (!fp)
 			_exit(-1);
-		fwrite(script, strlen(script), 1, wpipe);
-		fflush(wpipe);
-		fclose(wpipe);
-		_exit(0);
+
+		dup2(fileno(fp), STDERR_FILENO);
+		fprintf(fp, "%s\n", script);
+		_exit(fclose(fp));
 	}
 
 	// Parent
