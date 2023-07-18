@@ -62,6 +62,8 @@ tinyrl_t *tinyrl_new(FILE *istream, FILE *ostream,
 	tinyrl->handlers[KEY_EM] = tinyrl_key_yank;
 	tinyrl->handlers[KEY_HT] = tinyrl_key_tab;
 	tinyrl->handlers[KEY_ETB] = tinyrl_key_backword;
+	tinyrl->handlers[KEY_DLE] = tinyrl_key_up;
+	tinyrl->handlers[KEY_SO] = tinyrl_key_down;
 
 	tinyrl->max_line_length = 0;
 	tinyrl->buffer = NULL;
