@@ -19,6 +19,7 @@
 struct hist_s {
 	faux_list_t *list;
 	faux_list_node_t *pos;
+	faux_list_node_t *search;
 	size_t stifle;
 	char *fname;
 	bool_t temp;
@@ -115,6 +116,60 @@ const char *hist_pos_down(hist_t *hist)
 		return NULL;
 
 	return (const char *)faux_list_data(hist->pos);
+}
+
+
+const char *hist_search_substr(hist_t *hist, char *substr, bool_t dir)
+{
+	const char *match = NULL;
+	faux_list_node_t *pos;
+
+	if (!hist)
+		return NULL;
+
+	if (!hist->search) {
+		pos = faux_list_tail(hist->list);
+	} else {
+		if (dir)
+			pos = faux_list_next_node(hist->search);
+		else
+			pos = faux_list_prev_node(hist->search);
+	}
+
+	while (pos) {
+		const char *cand = (const char *)faux_list_data(pos);
+
+		if (strstr(cand, substr)) {
+			match = cand;
+			break;
+		}
+		pos = faux_list_prev_node(pos);
+	}
+
+	hist->search = pos;
+	return match;
+}
+
+
+const char *hist_search_current(hist_t *hist, char *substr)
+{
+	const char *current;
+
+	if (!hist || !hist->search)
+		return NULL;
+
+	current = (const char *)faux_list_data(hist->search);
+	if (!current || !strstr(current, substr))
+		return NULL;
+
+	return current;
+}
+
+
+void hist_search_reset(hist_t *hist)
+{
+	if (hist)
+		hist->search = NULL;
 }
 
 

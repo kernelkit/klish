@@ -153,6 +153,86 @@ bool_t tinyrl_key_down(tinyrl_t *tinyrl, unsigned char key)
 }
 
 
+/*
+ * Search history for a match.  Input keys form an isearch substring
+ * where the first match is displayed, along with the substring.  An
+ * empty match shows the last match, any new input text that matches
+ * the same line keeps that same line.  To loop through all matching
+ * lines, press Ctrl-R.
+ */
+static bool_t tinyrl_hist_search(tinyrl_t *tinyrl, char key)
+{
+	char prompt[strlen(tinyrl->isearch) + 30];
+	bool_t rc = BOOL_TRUE;
+	size_t len, room;
+
+	/* Any special key execpt Ctrl-R and Ctrl-L exit i-search */
+	if (key < 32) {
+		if (key == KEY_FF || key == KEY_DC2)
+			goto refresh;
+
+		rc = tinyrl->isearch_cont = BOOL_FALSE;
+		tinyrl_set_prompt(tinyrl, tinyrl->saved_prompt);
+		goto display;
+	}
+
+	len = strlen(tinyrl->isearch);
+	room = sizeof(tinyrl->isearch) - len - 1;
+
+	if (key == KEY_DEL)
+		tinyrl->isearch[len > 0 ? len - 1 : 0] = 0;
+	else if (room)
+		tinyrl->isearch[len] = key;
+	else
+		return BOOL_TRUE;
+refresh:
+	if (strlen(tinyrl->isearch)) {
+		const char *match;
+
+		match = hist_search_current(tinyrl->hist, tinyrl->isearch);
+		if (!match || key == KEY_DEL || key == KEY_DC2)
+			match = hist_search_substr(tinyrl->hist, tinyrl->isearch, key == KEY_DEL);
+		if (match)
+			tinyrl_line_replace(tinyrl, match);
+	} else {
+		hist_search_reset(tinyrl->hist);
+		tinyrl_reset_line(tinyrl);
+	}
+
+	snprintf(prompt, sizeof(prompt), "(reverse i-search)`%s': ", tinyrl->isearch);
+	tinyrl_set_prompt(tinyrl, prompt);
+
+display:
+	tinyrl_reset_line_state(tinyrl);
+	vt100_printf(tinyrl->term, "\r");
+	vt100_erase_line(tinyrl->term);
+	tinyrl_redisplay(tinyrl);
+
+	return rc;
+}
+
+
+/*
+ * Start reversed interactive (i-search) when user taps Ctrl-R, any text
+ * on the line at that time will be used as a search key in history.  We
+ * save the previous prompt and restore it when the user exits i-search.
+ */
+bool_t tinyrl_key_isearch(tinyrl_t *tinyrl, unsigned char key)
+{
+	if (!tinyrl->isearch_cont) {
+		tinyrl->isearch_cont = BOOL_TRUE;
+		hist_search_reset(tinyrl->hist);
+
+		memset(tinyrl->isearch, 0, sizeof(tinyrl->isearch));
+		strncpy(tinyrl->isearch, tinyrl->line.str, sizeof(tinyrl->isearch) - 1);
+
+		tinyrl->saved_prompt = faux_str_dup(tinyrl->prompt);
+	}
+
+	return tinyrl_hist_search(tinyrl, key);
+}
+
+
 bool_t tinyrl_key_left(tinyrl_t *tinyrl, unsigned char key)
 {
 	if (tinyrl->line.pos == 0)
