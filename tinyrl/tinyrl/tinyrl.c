@@ -64,6 +64,7 @@ tinyrl_t *tinyrl_new(FILE *istream, FILE *ostream,
 	tinyrl->handlers[KEY_ETB] = tinyrl_key_backword;
 	tinyrl->handlers[KEY_DLE] = tinyrl_key_up;
 	tinyrl->handlers[KEY_SO] = tinyrl_key_down;
+	tinyrl->handlers[KEY_DC2] = tinyrl_key_isearch;
 
 	tinyrl->hotkey_fn = NULL;
 	tinyrl->utf8 = BOOL_TRUE;
@@ -358,6 +359,10 @@ bool_t tinyrl_hist_restore(tinyrl_t *tinyrl)
 
 static bool_t process_char(tinyrl_t *tinyrl, char key)
 {
+	if (tinyrl->isearch_cont) {
+		if (tinyrl_key_isearch(tinyrl, key))
+			return BOOL_TRUE;
+	}
 
 	// Begin of ESC sequence
 	if (!tinyrl->esc_cont && (KEY_ESC == key)) {

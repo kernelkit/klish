@@ -23,6 +23,10 @@ const char *hist_pos(hist_t *hist);
 const char *hist_pos_up(hist_t *hist);
 const char *hist_pos_down(hist_t *hist);
 
+const char *hist_search_substr (hist_t *hist, char *substr, bool_t dir);
+const char *hist_search_current(hist_t *hist, char *substr);
+void        hist_search_reset  (hist_t *hist);
+
 extern int hist_save(const hist_t *hist);
 extern int hist_restore(hist_t *hist);
 
