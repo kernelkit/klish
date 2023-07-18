@@ -20,6 +20,7 @@ bool_t tinyrl_key_default(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_interrupt(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_start_of_line(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_end_of_line(tinyrl_t *tinyrl, unsigned char key);
+bool_t tinyrl_key_isearch(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_kill(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_yank(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_crlf(tinyrl_t *tinyrl, unsigned char key);
@@ -75,6 +76,9 @@ struct tinyrl_s {
 	char esc_seq[10]; // Current ESC sequence (line doesn't contain it)
 	char *esc_p; // Pointer for unfinished ESC sequence
 
+	char   *saved_prompt; // Saved prompt when in i-search mode
+	bool_t  isearch_cont; // Set in i-search mode
+	char    isearch[42];
 
 	unsigned max_line_length;
 	char *buffer;
