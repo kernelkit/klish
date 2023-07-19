@@ -44,6 +44,7 @@ static vt100_decode_t esc_map[] = {
 	{"f", VT100_CURSOR_FDWORD},
 	{"\177", VT100_DEL_BKWORD},
 	{"d", VT100_DEL_FDWORD},
+	{".", VT100_YANK_ARG},
 };
 
 
@@ -148,7 +149,7 @@ vt100_esc_e vt100_esc_decode(const char *esc_seq)
 	vt100_esc_e result = VT100_UNKNOWN;
 	unsigned int i = 0;
 
-	for (i = 0; i < (sizeof(esc_map) / sizeof(vt100_decode_t)); i++) {
+	for (i = 0; i < (sizeof(esc_map) / sizeof(esc_map[0])); i++) {
 		if (strcmp(esc_map[i].sequence, esc_seq))
 			continue;
 		result = esc_map[i].code;
