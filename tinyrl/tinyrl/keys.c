@@ -162,6 +162,18 @@ bool_t tinyrl_key_crlf(tinyrl_t *tinyrl, unsigned char key)
 }
 
 
+bool_t tinyrl_key_comment(tinyrl_t *tinyrl, unsigned char key)
+{
+	char buf[2] = { key, 0 };
+
+	tinyrl->line.pos = 0;
+	tinyrl_line_insert(tinyrl, buf, 1);
+	tinyrl_redisplay(tinyrl);
+
+	return tinyrl->handlers[KEY_CR](tinyrl, KEY_CR);
+}
+
+
 bool_t tinyrl_key_up(tinyrl_t *tinyrl, unsigned char key)
 {
 	const char *str = NULL;

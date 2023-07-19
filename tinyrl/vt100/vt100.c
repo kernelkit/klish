@@ -45,6 +45,7 @@ static vt100_decode_t esc_map[] = {
 	{"\177", VT100_DEL_BKWORD},
 	{"d", VT100_DEL_FDWORD},
 	{".", VT100_YANK_ARG},
+	{"#", VT100_COMMENT_LINE},
 };
 
 
