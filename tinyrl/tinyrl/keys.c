@@ -12,6 +12,29 @@
 #include "private.h"
 
 
+static int is_blank(const char *str, off_t pos, int utf8)
+{
+	if (utf8)
+		return iswspace(str[pos]);
+	return isspace(str[pos]);
+}
+
+static off_t move_left(const char *str, off_t pos, int utf8)
+{
+	if (utf8)
+		return utf8_move_left(str, pos);
+
+	return str && pos > 0 ? pos - 1 : 0;
+}
+
+static off_t move_right(const char *str, off_t pos, int utf8)
+{
+	if (utf8)
+		return utf8_move_right(str, pos);
+
+	return str && (size_t)pos < strlen(str) ? pos + 1 : pos;
+}
+
 bool_t tinyrl_key_default(tinyrl_t *tinyrl, unsigned char key)
 {
 	if (key > 31) {
@@ -308,32 +331,21 @@ bool_t tinyrl_key_delete(tinyrl_t *tinyrl, unsigned char key)
 
 static int is_space(tinyrl_t *tinyrl)
 {
-	if (tinyrl->utf8)
-		return iswspace(tinyrl->line.str[tinyrl->line.pos]);
-
-	return isspace(tinyrl->line.str[tinyrl->line.pos]);
+	return is_blank(tinyrl->line.str, tinyrl->line.pos, tinyrl->utf8);
 }
 
 static int is_prev_space(tinyrl_t *tinyrl)
 {
-	if (tinyrl->utf8) {
-		off_t new_pos = utf8_move_left(tinyrl->line.str, tinyrl->line.pos);
+	off_t pos = move_left(tinyrl->line.str, tinyrl->line.pos, tinyrl->utf8);
 
-		return iswspace(tinyrl->line.str[new_pos]);
-	}
-
-	return isspace(tinyrl->line.str[tinyrl->line.pos - 1]);
+	return is_blank(tinyrl->line.str, pos, tinyrl->utf8);
 }
 
 static int is_next_space(tinyrl_t *tinyrl)
 {
-	if (tinyrl->utf8) {
-		off_t new_pos = utf8_move_right(tinyrl->line.str, tinyrl->line.pos);
+	off_t pos = move_right(tinyrl->line.str, tinyrl->line.pos, tinyrl->utf8);
 
-		return iswspace(tinyrl->line.str[new_pos]);
-	}
-
-	return isspace(tinyrl->line.str[tinyrl->line.pos + 1]);
+	return is_blank(tinyrl->line.str, pos, tinyrl->utf8);
 }
 
 bool_t tinyrl_key_backword(tinyrl_t *tinyrl, unsigned char key)
