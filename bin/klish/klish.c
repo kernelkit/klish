@@ -202,7 +202,7 @@ int main(int argc, char **argv)
 	// TiniRL
 	if (ctx.mode == MODE_INTERACTIVE)
 		hist_path = faux_expand_tilde("~/.klish_history");
-	tinyrl = tinyrl_new(stdin, stdout, hist_path, 100);
+	tinyrl = tinyrl_new(stdin, stdout, hist_path, opts->hist_size);
 	if (ctx.mode == MODE_INTERACTIVE)
 		faux_str_free(hist_path);
 	tinyrl_set_prompt(tinyrl, "$ ");
