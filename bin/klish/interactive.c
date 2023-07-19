@@ -72,7 +72,7 @@ int klish_interactive_shell(ktp_session_t *ktp, struct options *opts)
 	fcntl(STDIN_FILENO, F_SETFL, stdin_flags | O_NONBLOCK);
 
 	hist_path = faux_expand_tilde("~/.klish_history");
-	tinyrl = tinyrl_new(stdin, stdout, hist_path, 100);
+	tinyrl = tinyrl_new(stdin, stdout, hist_path, opts->hist_size);
 	faux_str_free(hist_path);
 	tinyrl_set_prompt(tinyrl, "$ ");
 	tinyrl_set_udata(tinyrl, &ctx);

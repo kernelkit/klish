@@ -12,6 +12,7 @@
 
 #include <faux/faux.h>
 #include <faux/str.h>
+#include <faux/conv.h>
 #include <faux/list.h>
 #include <faux/ini.h>
 
@@ -39,6 +40,7 @@ struct options *opts_init(void)
 	opts->unix_socket_path = faux_str_dup(KLISH_DEFAULT_UNIX_SOCKET_PATH);
 	opts->pager = faux_str_dup(DEFAULT_PAGER);
 	opts->pager_enabled = BOOL_TRUE;
+	opts->hist_size = 100;
 
 	// Don't free command list because elements are the pointers to
 	// command line options and don't need to be freed().
@@ -216,6 +218,10 @@ bool_t config_parse(const char *cfgfile, struct options *opts)
 		else
 			opts->pager_enabled = BOOL_FALSE;
 	}
+
+	// HistorySize: number of lines (default: 100)
+	if ((tmp = faux_ini_find(ini, "HistorySize")))
+		faux_conv_atoul(tmp, &opts->hist_size, 0);
 
 	faux_ini_free(ini);
 
