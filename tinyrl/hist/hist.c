@@ -25,24 +25,6 @@ struct hist_s {
 };
 
 
-static int hist_compare(const void *first, const void *second)
-{
-	const char *f = (const char *)first;
-	const char *s = (const char *)second;
-
-	return strcmp(f, s);
-}
-
-
-static int hist_kcompare(const void *key, const void *list_item)
-{
-	const char *f = (const char *)key;
-	const char *s = (const char *)list_item;
-
-	return strcmp(f, s);
-}
-
-
 hist_t *hist_new(const char *hist_fname, size_t stifle)
 {
 	hist_t *hist = faux_zmalloc(sizeof(hist_t));
@@ -51,7 +33,7 @@ hist_t *hist_new(const char *hist_fname, size_t stifle)
 
 	// Init
 	hist->list = faux_list_new(FAUX_LIST_UNSORTED, FAUX_LIST_NONUNIQUE,
-		hist_compare, hist_kcompare, (void (*)(void *))faux_str_free);
+		NULL, NULL, (void (*)(void *))faux_str_free);
 	hist->pos = NULL; // It means position is reset
 	hist->stifle = stifle;
 	if (hist_fname)
@@ -145,9 +127,11 @@ void hist_add(hist_t *hist, const char *line, bool_t temp)
 	if (temp) {
 		hist->temp = BOOL_TRUE;
 	} else {
-		// Try to find the same string within history
-		faux_list_kdel(hist->list, line);
+		faux_list_node_t *prev = faux_list_tail(hist->list);
+		if (prev && !strcmp(faux_list_data(prev), line))
+			return;
 	}
+
 	// Add line to the end of list.
 	// Use (void *)line to make compiler happy about 'const' modifier.
 	faux_list_add(hist->list, (void *)faux_str_dup(line));
@@ -186,6 +170,9 @@ int hist_save(const hist_t *hist)
 		return -1;
 	node = faux_list_head(hist->list);
 	while ((line = (const char *)faux_list_each(&node))) {
+		if (!strlen(line))
+			continue;
+
 		faux_file_write(f, line, strlen(line));
 		faux_file_write(f, "\n", 1);
 	}
