@@ -15,8 +15,8 @@ C_DECL_BEGIN
 hist_t *hist_new(const char *hist_fname, size_t stifle);
 void hist_free(hist_t *hist);
 
-void hist_add(hist_t *hist, const char *line, bool_t temp);
-void hist_clear(hist_t *hist);
+bool_t hist_add(hist_t *hist, const char *line, bool_t temp);
+void   hist_clear(hist_t *hist);
 
 void hist_pos_reset(hist_t *hist);
 const char *hist_pos(hist_t *hist);

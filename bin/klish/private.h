@@ -18,6 +18,7 @@ struct options {
 	char *unix_socket_path;
 	char *pager;
 	bool_t pager_enabled;
+	bool_t hist_save_always;
 	size_t hist_size;
 	bool_t stop_on_error;
 	bool_t dry_run;

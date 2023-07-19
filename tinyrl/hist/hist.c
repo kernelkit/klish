@@ -192,10 +192,10 @@ void hist_search_reset(hist_t *hist)
 }
 
 
-void hist_add(hist_t *hist, const char *line, bool_t temp)
+bool_t hist_add(hist_t *hist, const char *line, bool_t temp)
 {
 	if (!hist)
-		return;
+		return BOOL_FALSE;
 
 	hist_pos_reset(hist);
 	if (temp) {
@@ -203,7 +203,7 @@ void hist_add(hist_t *hist, const char *line, bool_t temp)
 	} else {
 		faux_list_node_t *prev = faux_list_tail(hist->list);
 		if (prev && !strcmp(faux_list_data(prev), line))
-			return;
+		return BOOL_FALSE;
 	}
 
 	// Add line to the end of list.
@@ -215,6 +215,8 @@ void hist_add(hist_t *hist, const char *line, bool_t temp)
 	// If stifle = 0 then don't stifle at all (special case).
 	if ((hist->stifle != 0) && (faux_list_len(hist->list) > hist->stifle))
 		faux_list_del(hist->list, faux_list_head(hist->list));
+
+	return BOOL_TRUE;
 }
 
 
