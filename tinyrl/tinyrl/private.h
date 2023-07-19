@@ -25,6 +25,7 @@ bool_t tinyrl_key_kill(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_yank(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_yank_arg(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_crlf(tinyrl_t *tinyrl, unsigned char key);
+bool_t tinyrl_key_comment(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_up(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_down(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_left(tinyrl_t *tinyrl, unsigned char key);

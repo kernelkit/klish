@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -400,6 +401,22 @@ static bool_t sigwinch_cb(faux_eloop_t *eloop, faux_eloop_type_e type,
 }
 
 
+static bool_t tinyrl_passive_line(const char *line)
+{
+	const char *pos = line;
+
+	if (faux_str_is_empty(line))
+		return BOOL_TRUE;
+
+	while (*pos && isspace(*pos))
+		pos++;
+	if (*pos == '#')
+		return BOOL_TRUE;
+
+	return BOOL_FALSE;
+}
+
+
 static bool_t tinyrl_key_enter(tinyrl_t *tinyrl, unsigned char key)
 {
 	const char *line = NULL;
@@ -410,8 +427,10 @@ static bool_t tinyrl_key_enter(tinyrl_t *tinyrl, unsigned char key)
 	tinyrl_multi_crlf(tinyrl);
 	tinyrl_reset_line_state(tinyrl);
 	line = tinyrl_line(tinyrl);
-	// Don't do anything on empty line
-	if (faux_str_is_empty(line)) {
+
+	// Don't do anything on empty or commented-out lines
+	if (tinyrl_passive_line(line)) {
+		tinyrl_reset_line(tinyrl);
 		faux_error_free(error);
 		return BOOL_TRUE;
 	}
