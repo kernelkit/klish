@@ -121,6 +121,32 @@ bool_t tinyrl_key_yank(tinyrl_t *tinyrl, unsigned char key)
 }
 
 
+bool_t tinyrl_key_yank_arg(tinyrl_t *tinyrl, unsigned char key)
+{
+	const char *prev, *arg = NULL;
+	off_t pos;
+
+	(void)key;
+
+	prev = hist_prev_line(tinyrl->hist);
+	if (!prev)
+		return BOOL_TRUE;
+
+	pos = strlen(prev);
+	while (pos > 0) {
+		pos = move_left(prev, pos, tinyrl->utf8);
+		if (is_blank(prev, pos, tinyrl->utf8)) {
+			if (arg)
+				break; // complete word
+			continue;
+		}
+		arg = &prev[pos]; // candidate
+	}
+
+	return tinyrl_line_insert(tinyrl, arg, strlen(arg));
+}
+
+
 // Default handler for crlf
 bool_t tinyrl_key_crlf(tinyrl_t *tinyrl, unsigned char key)
 {

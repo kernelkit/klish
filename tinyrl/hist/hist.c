@@ -119,6 +119,25 @@ const char *hist_pos_down(hist_t *hist)
 }
 
 
+const char *hist_prev_line(hist_t *hist)
+{
+	faux_list_node_t *node;
+
+	if (!hist)
+		return NULL;
+
+	if (!hist->pos)
+		node = faux_list_tail(hist->list);
+	else
+		node = faux_list_prev_node(hist->pos);
+
+	if (!node)
+		return NULL;
+
+	return (const char *)faux_list_data(node);
+}
+
+
 const char *hist_search_substr(hist_t *hist, char *substr, bool_t dir)
 {
 	const char *match = NULL;

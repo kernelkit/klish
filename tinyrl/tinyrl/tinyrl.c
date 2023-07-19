@@ -384,7 +384,7 @@ static bool_t process_char(tinyrl_t *tinyrl, char key)
 		tinyrl->esc_p++;
 		// ANSI standard control sequences will end
 		// with a character between 64 - 126
-		if ((key != '[') && (key > 63)) {
+		if ((key != '[') && (key > 63 || key == '.')) {
 			*tinyrl->esc_p = '\0';
 			tinyrl_esc_seq(tinyrl, tinyrl->esc_seq);
 			tinyrl->esc_cont = BOOL_FALSE;
@@ -537,6 +537,9 @@ bool_t tinyrl_esc_seq(tinyrl_t *tinyrl, const char *esc_seq)
 		break;
 	case VT100_DELETE:
 		result = tinyrl_key_delete(tinyrl, 0);
+		break;
+	case VT100_YANK_ARG:
+		result = tinyrl_key_yank_arg(tinyrl, 0);
 		break;
 	case VT100_INSERT:
 	case VT100_PGDOWN:

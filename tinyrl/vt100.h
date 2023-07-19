@@ -70,6 +70,7 @@ typedef enum {
 	VT100_PGDOWN,		// No action at the moment
 	VT100_DEL_BKWORD,	// Delete word to the left
 	VT100_DEL_FDWORD,	// Delete word to the right
+	VT100_YANK_ARG,		// Yank argument from previous line
 } vt100_esc_e;
 
 
