@@ -754,31 +754,33 @@ static bool_t tinyrl_passive_line(const char *line)
 
 static bool_t tinyrl_key_enter(tinyrl_t *tinyrl, unsigned char key)
 {
-	const char *line = NULL;
 	ctx_t *ctx = (ctx_t *)tinyrl_udata(tinyrl);
 	faux_error_t *error = faux_error_new();
+	const char *line = NULL;
+	bool_t hist_change;
 
-	tinyrl_line_to_hist(tinyrl);
+	(void)key;
+
+	hist_change = tinyrl_line_to_hist(tinyrl);
 	tinyrl_multi_crlf(tinyrl);
 	tinyrl_reset_line_state(tinyrl);
 	line = tinyrl_line(tinyrl);
 
 	// Don't do anything on empty or commented-out lines
 	if (tinyrl_passive_line(line)) {
-		tinyrl_reset_line(tinyrl);
 		faux_error_free(error);
-		return BOOL_TRUE;
+		goto done;
 	}
 
 	ktp_session_cmd(ctx->ktp, line, error, ctx->opts->dry_run);
-
-	tinyrl_reset_line(tinyrl);
 	tinyrl_set_busy(tinyrl, BOOL_TRUE);
+done:
 	// Suppose non-interactive command by default
 	// Caught SIGINT for non-interactive commands
 	tinyrl_enable_isig(tinyrl);
-
-	key = key; // Happy compiler
+	tinyrl_reset_line(tinyrl);
+	if (hist_change && ctx->opts->hist_save_always)
+		tinyrl_hist_save(tinyrl);
 
 	return BOOL_TRUE;
 }

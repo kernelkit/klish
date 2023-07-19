@@ -40,6 +40,7 @@ struct options *opts_init(void)
 	opts->unix_socket_path = faux_str_dup(KLISH_DEFAULT_UNIX_SOCKET_PATH);
 	opts->pager = faux_str_dup(DEFAULT_PAGER);
 	opts->pager_enabled = BOOL_TRUE;
+	opts->hist_save_always = BOOL_FALSE;
 	opts->hist_size = 100;
 
 	// Don't free command list because elements are the pointers to
@@ -222,6 +223,14 @@ bool_t config_parse(const char *cfgfile, struct options *opts)
 	// HistorySize: number of lines (default: 100)
 	if ((tmp = faux_ini_find(ini, "HistorySize")))
 		faux_conv_atoul(tmp, &opts->hist_size, 0);
+
+	// Save history on every command: y/n
+	if ((tmp = faux_ini_find(ini, "HistorySaveAlways"))) {
+		if (strcmp(tmp, "y") == 0)
+			opts->hist_save_always = BOOL_TRUE;
+		else
+			opts->hist_save_always = BOOL_FALSE;
+	}
 
 	faux_ini_free(ini);
 
