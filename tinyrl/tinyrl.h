@@ -86,7 +86,7 @@ const char *tinyrl_line(const tinyrl_t *tinyrl);
 char *tinyrl_line_to_pos(const tinyrl_t *tinyrl);
 bool_t tinyrl_hist_save(const tinyrl_t *tinyrl);
 bool_t tinyrl_hist_restore(tinyrl_t *tinyrl);
-void tinyrl_line_to_hist(tinyrl_t *tinyrl);
+bool_t tinyrl_line_to_hist(tinyrl_t *tinyrl);
 void tinyrl_reset_hist_pos(tinyrl_t *tinyrl);
 void *tinyrl_udata(const tinyrl_t *tinyrl);
 void tinyrl_set_udata(tinyrl_t *tinyrl, void *udata);

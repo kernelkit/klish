@@ -768,12 +768,12 @@ void tinyrl_multi_crlf(const tinyrl_t *tinyrl)
 }
 
 
-void tinyrl_line_to_hist(tinyrl_t *tinyrl)
+bool_t tinyrl_line_to_hist(tinyrl_t *tinyrl)
 {
 	if (tinyrl->line.len == 0)
-		return;
+		return BOOL_FALSE;
 
-	hist_add(tinyrl->hist, tinyrl->line.str, BOOL_FALSE);
+	return hist_add(tinyrl->hist, tinyrl->line.str, BOOL_FALSE);
 }
 
 
