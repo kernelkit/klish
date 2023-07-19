@@ -71,6 +71,7 @@ typedef enum {
 	VT100_DEL_BKWORD,	// Delete word to the left
 	VT100_DEL_FDWORD,	// Delete word to the right
 	VT100_YANK_ARG,		// Yank argument from previous line
+	VT100_COMMENT_LINE,	// Comment out line
 } vt100_esc_e;
 
 
