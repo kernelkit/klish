@@ -47,3 +47,9 @@
 /klish-*.tar*
 /*.tgz
 /*.deb
+
+# Indexing
+TAGS
+GPATH
+GRTAGS
+GTAGS
