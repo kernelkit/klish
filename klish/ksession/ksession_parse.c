@@ -198,14 +198,7 @@ static kpargv_status_e ksession_parse_arg(ksession_t *session,
 				rc = KPARSE_NOTFOUND;
 			else
 				rc = res;
-//if (kentry_purpose(entry) == KENTRY_PURPOSE_COMMON)
-//fprintf(stderr, "SWITCH-nested-answer: name=%s, nested=%s, res=%s\n",
-//kentry_name(entry), kentry_name(nested), kpargv_status_decode(res));
-			// Save choosen entry name to container's value
-			if ((res == KPARSE_OK) && kentry_container(entry)) {
-				kparg_t *parg = kparg_new(entry, kentry_name(nested));
-				kpargv_add_pargs(pargv, parg);
-			}
+
 			// Try next entries if current status is NOTFOUND or NONE
 			if ((res == KPARSE_OK) || (res == KPARSE_ERROR))
 				break;
