@@ -394,7 +394,11 @@ static bool_t process_char(tinyrl_t *tinyrl, char key)
 		return BOOL_TRUE;
 	}
 
-	// Call the handler for key
+	// Call the handler for key, with a huge exception for Ctrl-D,
+	// only call that handler on empty line.
+	if (key == KEY_EOT && tinyrl->line.len > 0)
+		return tinyrl_key_delete(tinyrl, key);
+
 	// Handler (that has no special meaning) will put new char to line buffer
 	if (!tinyrl->handlers[(unsigned char)key](tinyrl, key))
 		vt100_ding(tinyrl->term);
