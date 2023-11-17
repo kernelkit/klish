@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #include <klish/khelper.h>
 #include <klish/kscheme.h>
@@ -18,10 +19,11 @@ struct ksession_s {
 	bool_t done; // Indicates that session is over and must be closed
 	size_t term_width;
 	size_t term_height;
-	pid_t pid;
-	uid_t uid;
-	gid_t gid;
-	char *user;
+	pid_t spid; // Server process to serve current session
+	pid_t pid; // Client's PID
+	uid_t uid; // Client's UID
+	gid_t gid; // Client's GID
+	char *user; // Client's user name (get by uid)
 	bool_t isatty_stdin;
 	bool_t isatty_stdout;
 	bool_t isatty_stderr;
@@ -45,6 +47,10 @@ KSET(session, size_t, term_width);
 // Height of pseudo terminal
 KGET(session, size_t, term_height);
 KSET(session, size_t, term_height);
+
+// PID of server's service process
+KGET(session, pid_t, spid);
+KSET(session, pid_t, spid);
 
 // PID of client (Unix socket peer)
 KGET(session, pid_t, pid);
@@ -120,6 +126,7 @@ ksession_t *ksession_new(kscheme_t *scheme, const char *start_entry)
 	session->isatty_stdin = BOOL_FALSE;
 	session->isatty_stdout = BOOL_FALSE;
 	session->isatty_stderr = BOOL_FALSE;
+	session->spid = getpid(); // For forked processes
 
 	return session;
 }

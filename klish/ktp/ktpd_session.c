@@ -300,6 +300,8 @@ static bool_t ktpd_session_process_auth(ktpd_session_t *ktpd, faux_msg_t *msg)
 	ksession_set_gid(ktpd->session, ucred.gid);
 	user = faux_sysdb_name_by_uid(ucred.uid);
 	ksession_set_user(ktpd->session, user);
+	syslog(LOG_INFO, "Authenticated user %d(%s), client PID %u\n",
+		ucred.uid, user ? user : "?", ucred.pid);
 	faux_str_free(user);
 
 	// Get tty information from auth message status
