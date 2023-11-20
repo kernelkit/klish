@@ -341,7 +341,7 @@ static bool_t send_next_command(ctx_t *ctx)
 	}
 
 	// Suppose non-interactive command by default
-	tinyrl_enable_isig(ctx->tinyrl);
+//	tinyrl_enable_isig(ctx->tinyrl);
 
 	return BOOL_TRUE;
 }
@@ -494,7 +494,7 @@ bool_t cmd_ack_cb(ktp_session_t *ktp, const faux_msg_t *msg, void *udata)
 	// Disable SIGINT caught for non-interactive commands.
 	// Do it after pager exit. Else it can restore wrong tty mode after
 	// ISIG disabling
-	tinyrl_disable_isig(ctx->tinyrl);
+//	tinyrl_disable_isig(ctx->tinyrl);
 
 	// Sometimes output stream from server doesn't contain final crlf so
 	// goto newline itself
@@ -563,7 +563,7 @@ bool_t cmd_incompleted_ack_cb(ktp_session_t *ktp, const faux_msg_t *msg, void *u
 			// Disable SIGINT signal (it is used for commands that
 			// don't need stdin. Commands with stdin can get ^C
 			// themself interactively.)
-			tinyrl_disable_isig(ctx->tinyrl);
+//			tinyrl_disable_isig(ctx->tinyrl);
 			faux_eloop_add_fd(ktp_session_eloop(ktp), STDIN_FILENO, POLLIN,
 				stdin_cb, ctx);
 		}
@@ -777,7 +777,7 @@ static bool_t tinyrl_key_enter(tinyrl_t *tinyrl, unsigned char key)
 done:
 	// Suppose non-interactive command by default
 	// Caught SIGINT for non-interactive commands
-	tinyrl_enable_isig(tinyrl);
+//	tinyrl_enable_isig(tinyrl);
 	tinyrl_reset_line(tinyrl);
 	if (hist_change && ctx->opts->hist_save_always)
 		tinyrl_hist_save(tinyrl);
