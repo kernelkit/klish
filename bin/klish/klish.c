@@ -802,12 +802,6 @@ static bool_t tinyrl_key_enter(tinyrl_t *tinyrl, unsigned char key)
 	tinyrl_reset_line_state(tinyrl);
 	line = tinyrl_line(tinyrl);
 
-	// Don't do anything on empty or commented-out lines
-	if (tinyrl_passive_line(line)) {
-		faux_error_free(error);
-		goto done;
-	}
-
 	ktp_session_cmd(ctx->ktp, line, error, ctx->opts->dry_run);
 	tinyrl_set_busy(tinyrl, BOOL_TRUE);
 done:
