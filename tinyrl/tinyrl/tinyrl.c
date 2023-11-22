@@ -150,7 +150,7 @@ void tinyrl_restore_mode(tinyrl_t *tinyrl)
 		return;
 	fd = fileno(istream);
 	// Do the mode switch
-	tcsetattr(fd, TCSADRAIN, &tinyrl->default_termios);
+	tcsetattr(fd, TCSADRAIN, &tinyrl->saved_termios);
 }
 
 
@@ -234,7 +234,7 @@ void tinyrl_set_istream(tinyrl_t *tinyrl, FILE *istream)
 	vt100_set_istream(tinyrl->term, istream);
 	// Save terminal settings to restore on exit
 	if (istream)
-		tcgetattr(fileno(istream), &tinyrl->default_termios);
+		tcgetattr(fileno(istream), &tinyrl->saved_termios);
 }
 
 
