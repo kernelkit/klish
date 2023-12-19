@@ -274,7 +274,6 @@ int main(int argc, char **argv)
 		tinyrl_bind_key(tinyrl, '\r', tinyrl_key_enter);
 		tinyrl_bind_key(tinyrl, '\t', tinyrl_key_tab);
 		tinyrl_bind_key(tinyrl, '?', tinyrl_key_help);
-		faux_eloop_add_fd(eloop, STDIN_FILENO, POLLIN, stdin_cb, &ctx);
 	}
 
 	// Send AUTH message to server
@@ -493,6 +492,9 @@ bool_t auth_ack_cb(ktp_session_t *ktp, const faux_msg_t *msg, void *udata)
 	send_winch_notification(ctx);
 
 	if (ctx->mode == MODE_INTERACTIVE) {
+		// Start getting stdin
+		faux_eloop_add_fd(ktp_session_eloop(ktp), STDIN_FILENO, POLLIN,
+			stdin_cb, ctx);
 		// Print prompt for interactive command
 		tinyrl_redisplay(ctx->tinyrl);
 	} else {
