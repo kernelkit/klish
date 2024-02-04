@@ -652,15 +652,15 @@ err:
 }
 
 
-static kentry_t *create_ptype(const char *ptype,
+static kentry_t *create_ptype(const char *name, const char *ptype,
 	const char *compl, const char *help, const char *ref)
 {
 	kentry_t *ptype_entry = NULL;
 
-	if (!ptype && !ref)
+	if (!name || (!ptype && !ref))
 		return NULL;
 
-	ptype_entry = kentry_new("__ptype");
+	ptype_entry = kentry_new(name);
 	assert(ptype_entry);
 	kentry_set_purpose(ptype_entry, KENTRY_PURPOSE_PTYPE);
 
@@ -765,7 +765,7 @@ static bool_t process_param(const kxml_node_t *element, void *parent,
 	// just links existing PTYPE. User can to don't specify nested tag PTYPE.
 	ptype_str = kxml_node_attr(element, "ptype");
 	if (ptype_str) {
-		kentry_t *ptype_entry = create_ptype(NULL, NULL, NULL, ptype_str);
+		kentry_t *ptype_entry = create_ptype(ientry.name, NULL, NULL, NULL, ptype_str);
 		assert(ptype_entry);
 		kentry_add_entrys(entry, ptype_entry);
 	}
@@ -894,6 +894,7 @@ static bool_t process_command(const kxml_node_t *element, void *parent,
 	}
 	if (!ptype_exists) {
 		kentry_t *ptype_entry = create_ptype(
+			"__ptype",
 			"COMMAND@klish",
 			"completion_COMMAND@klish",
 			"help_COMMAND@klish",
