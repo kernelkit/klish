@@ -100,6 +100,33 @@ static bool_t tinyrl_key_tab(tinyrl_t *tinyrl, unsigned char key);
 static bool_t tinyrl_key_help(tinyrl_t *tinyrl, unsigned char key);
 static bool_t tinyrl_key_hotkey(tinyrl_t *tinyrl, unsigned char key);
 
+static void print_motd(const char *motd)
+{
+	size_t i = 0;
+
+	while (i < strlen(motd)) {
+		char ch = motd[i++];
+
+		switch (ch) {
+		case '\\':
+			ch = motd[i++];
+			switch (ch) {
+		        case 0:
+				return;
+			case 'n':
+				putchar('\n');
+				break;
+			default:
+				/* unuspported, skip */
+				break;
+			}
+			break;
+		default:
+			putchar(ch);
+			break;
+		}
+	}
+}
 
 int main(int argc, char **argv)
 {
@@ -253,6 +280,10 @@ int main(int argc, char **argv)
 	// Send AUTH message to server
 	if (!ktp_session_auth(ktp, NULL))
 		goto err;
+
+	// Display MessageOfTheDay
+	if (opts->motd)
+		print_motd(opts->motd);
 
 	// Main loop
 	faux_eloop_loop(eloop);

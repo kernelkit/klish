@@ -220,6 +220,12 @@ bool_t config_parse(const char *cfgfile, struct options *opts)
 			opts->pager_enabled = BOOL_FALSE;
 	}
 
+	// Message of the day, printed just after starting klish
+	if ((tmp = faux_ini_find(ini, "MessageOfTheDay"))) {
+		faux_str_free(opts->motd);
+		opts->motd = faux_str_dup(tmp);
+	}
+
 	// HistorySize: number of lines (default: 100)
 	if ((tmp = faux_ini_find(ini, "HistorySize")))
 		faux_conv_atoul(tmp, &opts->hist_size, 0);
