@@ -19,7 +19,7 @@ struct options {
 	bool_t cfgfile_userdefined;
 	char *unix_socket_path;
 	char *pager;
-	char *motd;
+	char *banner;
 	bool_t pager_enabled;
 	bool_t hist_save_always;
 	size_t hist_size;

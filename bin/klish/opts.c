@@ -221,9 +221,9 @@ bool_t config_parse(const char *cfgfile, struct options *opts)
 	}
 
 	// Message of the day, printed just after starting klish
-	if ((tmp = faux_ini_find(ini, "MessageOfTheDay"))) {
-		faux_str_free(opts->motd);
-		opts->motd = faux_str_dup(tmp);
+	if ((tmp = faux_ini_find(ini, "Banner"))) {
+		faux_str_free(opts->banner);
+		opts->banner = faux_str_dup(tmp);
 	}
 
 	// HistorySize: number of lines (default: 100)

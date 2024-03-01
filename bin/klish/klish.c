@@ -100,16 +100,16 @@ static bool_t tinyrl_key_tab(tinyrl_t *tinyrl, unsigned char key);
 static bool_t tinyrl_key_help(tinyrl_t *tinyrl, unsigned char key);
 static bool_t tinyrl_key_hotkey(tinyrl_t *tinyrl, unsigned char key);
 
-static void print_motd(const char *motd)
+static void print_banner(const char *banner)
 {
 	size_t i = 0;
 
-	while (i < strlen(motd)) {
-		char ch = motd[i++];
+	while (i < strlen(banner)) {
+		char ch = banner[i++];
 
 		switch (ch) {
 		case '\\':
-			ch = motd[i++];
+			ch = banner[i++];
 			switch (ch) {
 		        case 0:
 				return;
@@ -282,8 +282,8 @@ int main(int argc, char **argv)
 		goto err;
 
 	// Display MessageOfTheDay
-	if (opts->motd)
-		print_motd(opts->motd);
+	if (opts->banner)
+		print_banner(opts->banner);
 
 	// Main loop
 	faux_eloop_loop(eloop);
