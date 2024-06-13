@@ -3,6 +3,7 @@
  */
 
 #include <assert.h>
+#include <grp.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -24,13 +25,18 @@
 static char *script_mkfifo(void)
 {
 	char *name = NULL;
+	struct group *gr;
 
 	name = faux_str_sprintf("/tmp/klish.fifo.%u.XXXXXX", getpid());
 	mktemp(name);
-	if (mkfifo(name, 0600) < 0) {
+	if (mkfifo(name, 0660) < 0) {
 		faux_str_free(name);
 		return NULL;
 	}
+
+	gr = getgrnam("sys-cli");
+	if (gr && chown(name, -1, gr->gr_gid))
+		syslog(LOG_ERR, "Failed chown(sys-cli) %s: %s", name, strerror(errno));
 
 	return name;
 }

@@ -485,10 +485,10 @@ static int create_listen_unix_sock(const char *path)
 		goto err;
 	}
 
-	gr = getgrnam("wheel");
+	gr = getgrnam("sys-cli");
 	if (gr) {
 		if (chown(path, -1, gr->gr_gid))
-			syslog(LOG_ERR, "Failed chown(wheel) %s: %s", path, strerror(errno));
+			syslog(LOG_ERR, "Failed chgrp(sys-cli) %s: %s", path, strerror(errno));
 		else
 			chmod(path, 0770);
 	}
