@@ -170,10 +170,10 @@ const char *kpargv_status_decode(kpargv_status_e status)
 		s = "OK";
 		break;
 	case KPARSE_NOTFOUND:
-		s = "Command not found";
+		s = "Command not found, try ? for a list of available commands.";
 		break;
 	case KPARSE_ERROR:
-		s = "Illegal command";
+		s = "Command not found, or incomplete.  Try ? for help or Tab for completion.";
 		break;
 	case KPARSE_NOACTION:
 		s = "Command has no action";
