@@ -92,9 +92,9 @@ int main(int argc, char **argv)
 		goto err;
 
 	// Initialize syslog
-	logoptions = LOG_CONS;
-	if (opts->foreground)
-		logoptions |= LOG_PERROR;
+	logoptions = LOG_CONS | LOG_PID | LOG_DAEMON;
+//	if (opts->foreground)
+//		logoptions |= LOG_PERROR;
 	openlog(LOG_NAME, logoptions, opts->log_facility);
 	if (!opts->verbose)
 		setlogmask(LOG_UPTO(LOG_INFO));
