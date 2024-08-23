@@ -22,26 +22,6 @@
 #include <klish/ksession.h>
 
 
-static char *script_mkfifo(void)
-{
-	char *name = NULL;
-	struct group *gr;
-
-	name = faux_str_sprintf("/tmp/klish.fifo.%u.XXXXXX", getpid());
-	mktemp(name);
-	if (mkfifo(name, 0660) < 0) {
-		faux_str_free(name);
-		return NULL;
-	}
-
-	gr = getgrnam("sys-cli");
-	if (gr && chown(name, -1, gr->gr_gid))
-		syslog(LOG_ERR, "Failed chown(sys-cli) %s: %s", name, strerror(errno));
-
-	return name;
-}
-
-
 const char *kcontext_type_e_str[] = {
 	"none",
 	"plugin_init",
@@ -166,8 +146,11 @@ static bool_t populate_env(kcontext_t *context)
 
 	// User
 	str = ksession_user(session);
-	if (str)
+	if (str) {
 		setenv(PREFIX"USER", str, OVERWRITE);
+		setenv("USER", str, OVERWRITE);
+		setenv("LOGNAME", str, OVERWRITE);
+	}
 
 	// Parameters
 	populate_env_kpargv(kcontext_pargv(context), PREFIX);
@@ -206,66 +189,106 @@ static char *find_out_shebang(const char *script)
 // Execute script
 int script_script(kcontext_t *context)
 {
+	char script_name[] = "/tmp/klish.XXXXXX";
+	const ksession_t *session = NULL;
 	const char *script = NULL;
-	pid_t cpid = -1;
-	int res = -1;
-	char *fifo_name = NULL;
 	char *command = NULL;
 	char *shebang = NULL;
+	pid_t cpid = -1;
+	int status;
+	uid_t uid;
+	uid_t gid;
+	FILE *fp;
+
+	assert(context);
+	session = kcontext_session(context);
+	assert(session);
 
 	script = kcontext_script(context);
 	if (faux_str_is_empty(script))
 		return 0;
 
-	// Create FIFO
-	if (!(fifo_name = script_mkfifo())) {
-		fprintf(stderr, "Error: Can't create temporary FIFO.\n"
-			"Error: The ACTION will be not executed.\n");
+	// Create script
+	uid = ksession_uid(session);
+	gid = ksession_gid(session);
+
+	mktemp(script_name);
+
+	// Parent: write to script
+	fp = fopen(script_name, "w");
+	if (!fp) {
+		fprintf(stderr, "Error: Can't open script for writing.\n");
+		unlink(script_name);
+		faux_str_free(script_name);
 		return -1;
 	}
-
-	// Create process to write to FIFO
-	cpid = fork();
-	if (cpid == -1) {
-		fprintf(stderr, "Error: Can't fork the write process.\n"
-			"Error: The ACTION will not be executed.\n");
-		unlink(fifo_name);
-		faux_str_free(fifo_name);
-		return -1;
-	}
-
-	// Child: write to FIFO
-	if (cpid == 0) {
-		FILE *fp = fopen(fifo_name, "w");
-
-		faux_str_free(fifo_name);
-		if (!fp)
-			_exit(-1);
-
-		dup2(fileno(fp), STDERR_FILENO);
-		fprintf(fp, "%s\n", script);
-		_exit(fclose(fp));
-	}
-
-	// Parent
-	// Populate environment. Put command parameters to env vars.
-	populate_env(context);
 
 	// Prepare command
 	shebang = find_out_shebang(script);
-	command = faux_str_sprintf("%s %s", shebang, fifo_name);
+	fprintf(fp, "#!%s\n%s\n", shebang, script);
+	fclose(fp);
+	if (chown(script_name, uid, gid) || chmod(script_name, 0755))
+		syslog(LOG_ERR, "Failed setting perms on %s: %s", script_name, strerror(errno));
 
-	res = system(command);
+	// Fork process
+	cpid = fork();
+	if (cpid == -1) {
+		fprintf(stderr, "Error: failed forking off executor, error %d.\n"
+			"Error: The ACTION will not be executed.\n", errno);
+		unlink(script_name);
+		faux_str_free(script_name);
 
-	// Wait for the writing process
-	kill(cpid, SIGTERM);
-	while (waitpid(cpid, NULL, 0) != cpid);
+		return -1;
+	}
+
+	// Child: drop privileges and execute command
+	if (cpid == 0) {
+		gid_t groups[NGROUPS_MAX];
+		int ngroups = NGROUPS_MAX;
+		int res;
+
+		populate_env(context);
+		setgroups(0, NULL);
+
+		// Get supplementary groups
+		if (getgrouplist(ksession_user(session), gid, groups, &ngroups) == -1) {
+			syslog(LOG_ERR, "Failed retrieving supplementary groups: %s", strerror(errno));
+			_exit(-1);
+		}
+
+		// Set supplementary groups
+		if (setgroups(ngroups, groups) != 0) {
+			syslog(LOG_ERR, "Failed setting supplementary groups: %s", strerror(errno));
+			_exit(-1);
+		}
+		// Drop privileges
+		if (setgid(gid) || setuid(uid)) {
+			syslog(LOG_ERR, "Failed dropping privileges to (UID:%d GID:%d): %s",
+			       uid, gid, strerror(errno));
+			_exit(-1);
+		}
+
+		dup2(STDOUT_FILENO, STDERR_FILENO);
+
+		// Execute command
+		res = system(script_name);
+
+		// Clean up
+		faux_str_free(command);
+		faux_str_free(shebang);
+
+		_exit(WEXITSTATUS(res));
+	}
+
+	// Wait for the child process
+	while (waitpid(cpid, &status, 0) != cpid)
+		;
 
 	// Clean up
-	faux_str_free(command);
-	unlink(fifo_name);
-	faux_str_free(fifo_name);
-	faux_str_free(shebang);
+	unlink(script_name);
 
-	return WEXITSTATUS(res);
+	if (WIFEXITED(status))
+		return WEXITSTATUS(status);
+
+	return -1;
 }
