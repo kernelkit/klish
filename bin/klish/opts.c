@@ -227,8 +227,11 @@ bool_t config_parse(const char *cfgfile, struct options *opts)
 	}
 
 	// HistorySize: number of lines (default: 100)
-	if ((tmp = faux_ini_find(ini, "HistorySize")))
-		faux_conv_atoul(tmp, &opts->hist_size, 0);
+	if ((tmp = faux_ini_find(ini, "HistorySize"))) {
+		unsigned long hist_size;
+		faux_conv_atoul(tmp, &hist_size, 0);
+		opts->hist_size = hist_size;
+	}
 
 	// Save history on every command: y/n
 	if ((tmp = faux_ini_find(ini, "HistorySaveAlways"))) {
