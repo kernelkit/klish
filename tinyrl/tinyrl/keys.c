@@ -392,30 +392,67 @@ static int is_next_space(tinyrl_t *tinyrl)
 
 bool_t tinyrl_key_backword(tinyrl_t *tinyrl, unsigned char key)
 {
+	size_t end_pos = tinyrl->line.pos;
+	size_t start_pos = end_pos;
+
 	(void)key;
 
-	// remove current whitespace before cursor
-	while (tinyrl->line.pos > 0 && is_prev_space(tinyrl))
-		tinyrl_key_backspace(tinyrl, KEY_BS);
+	// skip current whitespace before cursor
+	while (start_pos > 0) {
+		size_t prev_pos = move_left(tinyrl->line.str, start_pos, tinyrl->utf8);
+		if (!is_blank(tinyrl->line.str, prev_pos, tinyrl->utf8))
+			break;
+		start_pos = prev_pos;
+	}
 
-	// delete word before cusor
-	while (tinyrl->line.pos > 0 && !is_prev_space(tinyrl))
-		tinyrl_key_backspace(tinyrl, KEY_BS);
+	// find start of word
+	while (start_pos > 0) {
+		size_t prev_pos = move_left(tinyrl->line.str, start_pos, tinyrl->utf8);
+		if (is_blank(tinyrl->line.str, prev_pos, tinyrl->utf8))
+			break;
+		start_pos = prev_pos;
+	}
+
+	size_t count = end_pos - start_pos;
+	if (count > 0) {
+		// save to kill buffer
+		faux_free(tinyrl->kill_string);
+		tinyrl->kill_string = faux_zmalloc(count + 1);
+		memcpy(tinyrl->kill_string, &tinyrl->line.str[start_pos], count);
+
+		// delete the text
+		tinyrl_line_delete(tinyrl, start_pos, count);
+		tinyrl->line.pos = start_pos;
+	}
 
 	return BOOL_TRUE;
 }
 
 bool_t tinyrl_key_delword(tinyrl_t *tinyrl, unsigned char key)
 {
+	size_t start_pos = tinyrl->line.pos;
+	size_t end_pos = start_pos;
+
 	(void)key;
 
-	// remove current whitespace at cursor
-	while (tinyrl->line.pos < tinyrl->line.len && is_space(tinyrl))
-		tinyrl_key_delete(tinyrl, KEY_DEL);
+	// skip current whitespace at cursor
+	while (end_pos < tinyrl->line.len && is_blank(tinyrl->line.str, end_pos, tinyrl->utf8))
+		end_pos = move_right(tinyrl->line.str, end_pos, tinyrl->utf8);
 
-	// delete word at cusor
-	while (tinyrl->line.pos < tinyrl->line.len && !is_space(tinyrl))
-		tinyrl_key_delete(tinyrl, KEY_DEL);
+	// find end of word
+	while (end_pos < tinyrl->line.len && !is_blank(tinyrl->line.str, end_pos, tinyrl->utf8))
+		end_pos = move_right(tinyrl->line.str, end_pos, tinyrl->utf8);
+
+	size_t count = end_pos - start_pos;
+	if (count > 0) {
+		// save to kill buffer
+		faux_free(tinyrl->kill_string);
+		tinyrl->kill_string = faux_zmalloc(count + 1);
+		memcpy(tinyrl->kill_string, &tinyrl->line.str[start_pos], count);
+
+		// delete the text
+		tinyrl_line_delete(tinyrl, start_pos, count);
+	}
 
 	return BOOL_TRUE;
 }
