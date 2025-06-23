@@ -11,12 +11,16 @@
 
 #include "private.h"
 
-
+/*
+ * Used to find next logical word, where-words-can-be-separated
+ * also by hyphens.or.periods, or even_underscores, in addition
+ * to regular whitespace characters.
+ */
 static int is_blank(const char *str, off_t pos, int utf8)
 {
 	if (utf8)
-		return iswspace(str[pos]);
-	return isspace(str[pos]);
+		return !iswalnum(str[pos]);
+	return !isalnum(str[pos]);
 }
 
 static off_t move_left(const char *str, off_t pos, int utf8)
