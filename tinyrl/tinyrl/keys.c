@@ -371,11 +371,6 @@ bool_t tinyrl_key_delete(tinyrl_t *tinyrl, unsigned char key)
 	return BOOL_TRUE;
 }
 
-static int is_space(tinyrl_t *tinyrl)
-{
-	return is_blank(tinyrl->line.str, tinyrl->line.pos, tinyrl->utf8);
-}
-
 static int is_prev_space(tinyrl_t *tinyrl)
 {
 	off_t pos = move_left(tinyrl->line.str, tinyrl->line.pos, tinyrl->utf8);
