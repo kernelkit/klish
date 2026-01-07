@@ -18,6 +18,7 @@ struct options {
 	char *cfgfile;
 	bool_t cfgfile_userdefined;
 	char *unix_socket_path;
+	char *socket_group;
 	char *dbs;
 	bool_t foreground; // Don't daemonize
 	bool_t verbose;

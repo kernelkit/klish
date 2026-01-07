@@ -50,7 +50,7 @@
 // Local static functions
 bool_t daemonize(const char *pidfile);
 bool_t kentry_entrys_is_empty(const kentry_t *entry);
-static int create_listen_unix_sock(const char *path);
+static int create_listen_unix_sock(const char *path, const struct options *opts);
 static kscheme_t *load_all_dbs(const char *dbs,
 	faux_ini_t *global_config, faux_error_t *error);
 static bool_t clear_scheme(kscheme_t *scheme, faux_error_t *error);
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
 
 	// Listen socket
 	syslog(LOG_DEBUG, "Create listen UNIX socket: %s", opts->unix_socket_path);
-	listen_unix_sock = create_listen_unix_sock(opts->unix_socket_path);
+	listen_unix_sock = create_listen_unix_sock(opts->unix_socket_path, opts);
 	if (listen_unix_sock < 0)
 		goto err;
 	syslog(LOG_DEBUG, "Listen socket %d", listen_unix_sock);
@@ -448,12 +448,11 @@ static bool_t clear_scheme(kscheme_t *scheme, faux_error_t *error)
  * @param [in] path Socket path within filesystem.
  * @return Socket descriptor of < 0 on error.
  */
-static int create_listen_unix_sock(const char *path)
+static int create_listen_unix_sock(const char *path, const struct options *opts)
 {
 	int sock = -1;
 	int opt = 1;
 	struct sockaddr_un laddr = {};
-	struct group *gr;
 
 	assert(path);
 	if (!path)
@@ -489,12 +488,18 @@ static int create_listen_unix_sock(const char *path)
 		goto err;
 	}
 
-	gr = getgrnam("sys-cli");
-	if (gr) {
-		if (chown(path, -1, gr->gr_gid))
-			syslog(LOG_ERR, "Failed chgrp(sys-cli) %s: %s", path, strerror(errno));
-		else
-			chmod(path, 0770);
+	// Change socket group if configured
+	if (opts && opts->socket_group) {
+		struct group *gr = getgrnam(opts->socket_group);
+		if (gr) {
+			if (chown(path, -1, gr->gr_gid))
+				syslog(LOG_ERR, "Failed chgrp(%s) %s: %s",
+					opts->socket_group, path, strerror(errno));
+			else
+				chmod(path, 0770);
+		} else {
+			syslog(LOG_WARNING, "Socket group '%s' not found", opts->socket_group);
+		}
 	}
 
 	return sock;

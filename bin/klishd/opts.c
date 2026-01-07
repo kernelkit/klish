@@ -37,6 +37,7 @@ struct options *opts_init(void)
 	opts->pidfile = faux_str_dup(DEFAULT_PIDFILE);
 	opts->cfgfile = faux_str_dup(DEFAULT_CFGFILE);
 	opts->unix_socket_path = faux_str_dup(KLISH_DEFAULT_UNIX_SOCKET_PATH);
+	opts->socket_group = NULL; // No group change by default
 	opts->cfgfile_userdefined = BOOL_FALSE;
 	opts->foreground = BOOL_FALSE; // Daemonize by default
 	opts->verbose = BOOL_FALSE;
@@ -54,6 +55,7 @@ void opts_free(struct options *opts)
 	faux_str_free(opts->pidfile);
 	faux_str_free(opts->cfgfile);
 	faux_str_free(opts->unix_socket_path);
+	faux_str_free(opts->socket_group);
 	faux_str_free(opts->dbs);
 	faux_free(opts);
 }
@@ -181,6 +183,12 @@ faux_ini_t *config_parse(const char *cfgfile, struct options *opts)
 		opts->unix_socket_path = faux_str_dup(tmp);
 	}
 
+	// SocketGroup
+	if ((tmp = faux_ini_find(ini, "SocketGroup"))) {
+		faux_str_free(opts->socket_group);
+		opts->socket_group = faux_str_dup(tmp);
+	}
+
 	// DBs
 	if ((tmp = faux_ini_find(ini, "DBs"))) {
 		faux_str_free(opts->dbs);
@@ -205,6 +213,7 @@ int opts_show(struct options *opts)
 	syslog(LOG_DEBUG, "opts: PIDPath = %s\n", opts->pidfile);
 	syslog(LOG_DEBUG, "opts: ConfigPath = %s\n", opts->cfgfile);
 	syslog(LOG_DEBUG, "opts: UnixSocketPath = %s\n", opts->unix_socket_path);
+	syslog(LOG_DEBUG, "opts: SocketGroup = %s\n", opts->socket_group);
 	syslog(LOG_DEBUG, "opts: DBs = %s\n", opts->dbs);
 
 	return 0;
