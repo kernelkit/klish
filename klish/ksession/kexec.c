@@ -555,8 +555,6 @@ static bool_t exec_action_async(const kexec_t *exec, kcontext_t *context,
 	ksym_fn fn = NULL;
 	int exitcode = 0;
 	pid_t child_pid = -1;
-	int i = 0;
-	int fdmax = 0;
 	sigset_t sigs;
 
 	fn = ksym_function(kaction_sym(action));
@@ -607,11 +605,6 @@ static bool_t exec_action_async(const kexec_t *exec, kcontext_t *context,
 	dup2(kcontext_stdin(context), STDIN_FILENO);
 	dup2(kcontext_stdout(context), STDOUT_FILENO);
 	dup2(kcontext_stderr(context), STDERR_FILENO);
-
-	// Close all inherited fds except stdin, stdout, stderr
-	fdmax = (int)sysconf(_SC_OPEN_MAX);
-	for (i = (STDERR_FILENO + 1); i < fdmax; i++)
-		close(i);
 
 	exitcode = fn(context);
 	// We will use _exit() later so stdio streams will remain unflushed.
