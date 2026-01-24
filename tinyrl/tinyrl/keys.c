@@ -651,6 +651,17 @@ bool_t tinyrl_key_transpose(tinyrl_t *tinyrl, unsigned char key)
 }
 
 
+bool_t tinyrl_key_quoted_insert(tinyrl_t *tinyrl, unsigned char key)
+{
+	(void)key;
+
+	// Set flag to insert next character literally
+	tinyrl->quoted_insert = BOOL_TRUE;
+
+	return BOOL_TRUE;
+}
+
+
 bool_t tinyrl_key_set_mark(tinyrl_t *tinyrl, unsigned char key)
 {
 	(void)key;

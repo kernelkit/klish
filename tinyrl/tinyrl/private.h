@@ -39,6 +39,7 @@ bool_t tinyrl_key_right_word(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_clear_screen(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_erase_line(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_transpose(tinyrl_t *tinyrl, unsigned char key);
+bool_t tinyrl_key_quoted_insert(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_set_mark(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_exchange_point_and_mark(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_tab(tinyrl_t *tinyrl, unsigned char key);
@@ -83,6 +84,7 @@ struct tinyrl_s {
 	char esc_seq[10]; // Current ESC sequence (line doesn't contain it)
 	char *esc_p; // Pointer for unfinished ESC sequence
 	bool_t ctrlx_cont; // Ctrl-X prefix mode
+	bool_t quoted_insert; // Quoted insert mode (next char literal)
 
 	char   *saved_prompt; // Saved prompt when in i-search mode
 	bool_t  isearch_cont; // Set in i-search mode

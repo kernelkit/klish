@@ -45,6 +45,7 @@ tinyrl_t *tinyrl_new(FILE *istream, FILE *ostream,
 	tinyrl->esc_seq[0] = '\0';
 	tinyrl->esc_p = tinyrl->esc_seq;
 	tinyrl->ctrlx_cont = BOOL_FALSE;
+	tinyrl->quoted_insert = BOOL_FALSE;
 
 	// Mark and region
 	tinyrl->mark = 0;
@@ -78,6 +79,8 @@ tinyrl_t *tinyrl_new(FILE *istream, FILE *ostream,
 	tinyrl->handlers[KEY_ACK] = tinyrl_key_right;
 	tinyrl->handlers[KEY_DC4] = tinyrl_key_transpose;
 	tinyrl->handlers[KEY_NUL] = tinyrl_key_set_mark;
+	tinyrl->handlers[KEY_DC1] = tinyrl_key_quoted_insert;
+	tinyrl->handlers[KEY_SYN] = tinyrl_key_quoted_insert;
 
 	tinyrl->hotkey_fn = NULL;
 	tinyrl->utf8 = BOOL_TRUE;
@@ -452,6 +455,14 @@ static bool_t process_char(tinyrl_t *tinyrl, char key)
 	if (tinyrl->isearch_cont) {
 		if (tinyrl_key_isearch(tinyrl, key))
 			return BOOL_TRUE;
+	}
+
+	// Handle quoted insert mode - insert next character literally
+	if (tinyrl->quoted_insert) {
+		tinyrl->quoted_insert = BOOL_FALSE; // Reset flag
+		// Insert character literally, even control characters
+		tinyrl_line_insert(tinyrl, (const char *)(&key), 1);
+		return BOOL_TRUE;
 	}
 
 	// Handle Ctrl-X prefix mode
