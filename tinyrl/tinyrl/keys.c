@@ -385,12 +385,60 @@ static int is_next_space(tinyrl_t *tinyrl)
 	return is_blank(tinyrl->line.str, pos, tinyrl->utf8);
 }
 
+/* Helper function to operate on region between mark and point */
+static bool_t region_operation(tinyrl_t *tinyrl, bool_t delete_text)
+{
+	size_t start, end, count;
+
+	if (!tinyrl->mark_set)
+		return BOOL_FALSE;
+
+	// Get region boundaries (mark to point)
+	if (tinyrl->mark < tinyrl->line.pos) {
+		start = tinyrl->mark;
+		end = tinyrl->line.pos;
+	} else {
+		start = tinyrl->line.pos;
+		end = tinyrl->mark;
+	}
+
+	// Ensure bounds are valid
+	if (end > tinyrl->line.len)
+		end = tinyrl->line.len;
+	if (start > tinyrl->line.len)
+		start = tinyrl->line.len;
+
+	count = end - start;
+	if (count == 0)
+		return BOOL_TRUE; // Empty region
+
+	// Save region to kill buffer
+	faux_free(tinyrl->kill_string);
+	tinyrl->kill_string = faux_zmalloc(count + 1);
+	memcpy(tinyrl->kill_string, &tinyrl->line.str[start], count);
+	tinyrl->kill_string[count] = '\0';
+
+	if (delete_text) {
+		// Delete the region
+		tinyrl_line_delete(tinyrl, start, count);
+		tinyrl->line.pos = start;
+		// Clear mark after killing region
+		tinyrl->mark_set = BOOL_FALSE;
+	}
+
+	return BOOL_TRUE;
+}
+
 bool_t tinyrl_key_backword(tinyrl_t *tinyrl, unsigned char key)
 {
 	size_t end_pos = tinyrl->line.pos;
 	size_t start_pos = end_pos;
 
 	(void)key;
+
+	// If mark is set, kill the region instead of killing word backward
+	if (tinyrl->mark_set)
+		return region_operation(tinyrl, BOOL_TRUE);
 
 	// skip current whitespace before cursor
 	while (start_pos > 0) {
@@ -451,6 +499,16 @@ bool_t tinyrl_key_delword(tinyrl_t *tinyrl, unsigned char key)
 
 	return BOOL_TRUE;
 }
+
+
+bool_t tinyrl_key_copy_region(tinyrl_t *tinyrl, unsigned char key)
+{
+	(void)key;
+
+	// Copy region to kill buffer without deleting
+	return region_operation(tinyrl, BOOL_FALSE);
+}
+
 
 bool_t tinyrl_key_left_word(tinyrl_t *tinyrl, unsigned char key)
 {
@@ -519,6 +577,110 @@ bool_t tinyrl_key_erase_line(tinyrl_t *tinyrl, unsigned char key)
 
 	// delete the text from the start of the line 
 	tinyrl_reset_line(tinyrl);
+
+	return BOOL_TRUE;
+}
+
+
+bool_t tinyrl_key_transpose(tinyrl_t *tinyrl, unsigned char key)
+{
+	off_t pos = tinyrl->line.pos;
+	off_t prev_pos, prev_prev_pos;
+	char char1[8], char2[8]; // Buffers for UTF-8 chars (max 6 bytes + null)
+	size_t char1_len, char2_len;
+
+	(void)key;
+
+	// Need at least 2 characters in the line
+	if (tinyrl->line.len < 2)
+		return BOOL_TRUE;
+
+	// If at the beginning, can't transpose
+	if (pos == 0)
+		return BOOL_TRUE;
+
+	// If at end of line (or only one char before cursor), transpose
+	// the two characters before the cursor
+	if (pos >= tinyrl->line.len) {
+		// At end: swap the last two characters
+		prev_pos = move_left(tinyrl->line.str, pos, tinyrl->utf8);
+		if (prev_pos == 0)
+			return BOOL_TRUE; // Only one char in line
+		prev_prev_pos = move_left(tinyrl->line.str, prev_pos, tinyrl->utf8);
+
+		// Extract both characters
+		char2_len = prev_pos - prev_prev_pos;
+		char1_len = pos - prev_pos;
+		memcpy(char2, tinyrl->line.str + prev_prev_pos, char2_len);
+		memcpy(char1, tinyrl->line.str + prev_pos, char1_len);
+		char2[char2_len] = '\0';
+		char1[char1_len] = '\0';
+
+		// Delete both characters
+		tinyrl_line_delete(tinyrl, prev_prev_pos, char2_len + char1_len);
+
+		// Insert in swapped order
+		tinyrl->line.pos = prev_prev_pos;
+		tinyrl_line_insert(tinyrl, char1, char1_len);
+		tinyrl_line_insert(tinyrl, char2, char2_len);
+		// Cursor stays at end
+	} else {
+		// In middle: move char before cursor forward over char at cursor
+		prev_pos = move_left(tinyrl->line.str, pos, tinyrl->utf8);
+		off_t next_pos = move_right(tinyrl->line.str, pos, tinyrl->utf8);
+
+		// Extract both characters
+		char1_len = pos - prev_pos; // char before cursor
+		char2_len = next_pos - pos; // char at cursor
+		memcpy(char1, tinyrl->line.str + prev_pos, char1_len);
+		memcpy(char2, tinyrl->line.str + pos, char2_len);
+		char1[char1_len] = '\0';
+		char2[char2_len] = '\0';
+
+		// Delete both characters
+		tinyrl_line_delete(tinyrl, prev_pos, char1_len + char2_len);
+
+		// Insert in swapped order
+		tinyrl->line.pos = prev_pos;
+		tinyrl_line_insert(tinyrl, char2, char2_len);
+		tinyrl_line_insert(tinyrl, char1, char1_len);
+		// Cursor advances to after both chars
+	}
+
+	return BOOL_TRUE;
+}
+
+
+bool_t tinyrl_key_set_mark(tinyrl_t *tinyrl, unsigned char key)
+{
+	(void)key;
+
+	tinyrl->mark = tinyrl->line.pos;
+	tinyrl->mark_set = BOOL_TRUE;
+
+	return BOOL_TRUE;
+}
+
+
+bool_t tinyrl_key_exchange_point_and_mark(tinyrl_t *tinyrl, unsigned char key)
+{
+	size_t tmp;
+
+	(void)key;
+
+	if (!tinyrl->mark_set)
+		return BOOL_TRUE; // No mark set, do nothing
+
+	// Swap cursor position and mark
+	tmp = tinyrl->line.pos;
+	tinyrl->line.pos = tinyrl->mark;
+	tinyrl->mark = tmp;
+
+	// Ensure mark doesn't go beyond line length
+	if (tinyrl->mark > tinyrl->line.len)
+		tinyrl->mark = tinyrl->line.len;
+	if (tinyrl->line.pos > tinyrl->line.len)
+		tinyrl->line.pos = tinyrl->line.len;
 
 	return BOOL_TRUE;
 }

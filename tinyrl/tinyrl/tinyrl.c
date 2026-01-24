@@ -44,6 +44,11 @@ tinyrl_t *tinyrl_new(FILE *istream, FILE *ostream,
 	tinyrl->esc_cont = BOOL_FALSE;
 	tinyrl->esc_seq[0] = '\0';
 	tinyrl->esc_p = tinyrl->esc_seq;
+	tinyrl->ctrlx_cont = BOOL_FALSE;
+
+	// Mark and region
+	tinyrl->mark = 0;
+	tinyrl->mark_set = BOOL_FALSE;
 
 	// Prompt
 	tinyrl_set_prompt(tinyrl, "> ");
@@ -69,6 +74,10 @@ tinyrl_t *tinyrl_new(FILE *istream, FILE *ostream,
 	tinyrl->handlers[KEY_DLE] = tinyrl_key_up;
 	tinyrl->handlers[KEY_SO] = tinyrl_key_down;
 	tinyrl->handlers[KEY_DC2] = tinyrl_key_isearch;
+	tinyrl->handlers[KEY_STX] = tinyrl_key_left;
+	tinyrl->handlers[KEY_ACK] = tinyrl_key_right;
+	tinyrl->handlers[KEY_DC4] = tinyrl_key_transpose;
+	tinyrl->handlers[KEY_NUL] = tinyrl_key_set_mark;
 
 	tinyrl->hotkey_fn = NULL;
 	tinyrl->utf8 = BOOL_TRUE;
@@ -445,6 +454,24 @@ static bool_t process_char(tinyrl_t *tinyrl, char key)
 			return BOOL_TRUE;
 	}
 
+	// Handle Ctrl-X prefix mode
+	if (tinyrl->ctrlx_cont) {
+		tinyrl->ctrlx_cont = BOOL_FALSE; // Reset prefix mode
+		// Ctrl-X Ctrl-X - exchange point and mark
+		if (key == KEY_CAN) { // Ctrl-X
+			return tinyrl_key_exchange_point_and_mark(tinyrl, key);
+		}
+		// Other Ctrl-X combinations can be added here
+		// For now, just ignore unknown Ctrl-X combinations
+		return BOOL_TRUE;
+	}
+
+	// Begin of Ctrl-X prefix
+	if (KEY_CAN == key) {
+		tinyrl->ctrlx_cont = BOOL_TRUE;
+		return BOOL_TRUE;
+	}
+
 	// Begin of ESC sequence
 	if (!tinyrl->esc_cont && (KEY_ESC == key)) {
 		tinyrl->esc_cont = BOOL_TRUE; // Start ESC sequence
@@ -625,6 +652,9 @@ bool_t tinyrl_esc_seq(tinyrl_t *tinyrl, const char *esc_seq)
 		break;
 	case VT100_COMMENT_LINE:
 		result = tinyrl_key_comment(tinyrl, '#');
+		break;
+	case VT100_COPY_REGION:
+		result = tinyrl_key_copy_region(tinyrl, 0);
 		break;
 	case VT100_INSERT:
 	case VT100_PGDOWN:

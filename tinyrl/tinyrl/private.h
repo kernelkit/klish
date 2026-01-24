@@ -32,11 +32,15 @@ bool_t tinyrl_key_right(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_backspace(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_backword(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_delword(tinyrl_t *tinyrl, unsigned char key);
+bool_t tinyrl_key_copy_region(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_delete(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_left_word(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_right_word(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_clear_screen(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_erase_line(tinyrl_t *tinyrl, unsigned char key);
+bool_t tinyrl_key_transpose(tinyrl_t *tinyrl, unsigned char key);
+bool_t tinyrl_key_set_mark(tinyrl_t *tinyrl, unsigned char key);
+bool_t tinyrl_key_exchange_point_and_mark(tinyrl_t *tinyrl, unsigned char key);
 bool_t tinyrl_key_tab(tinyrl_t *tinyrl, unsigned char key);
 
 // Tinyrl
@@ -64,6 +68,8 @@ struct tinyrl_s {
 	char *kill_string;
 	line_t line; // Current line
 	line_t last; // Last (previous) line
+	size_t mark; // Mark position for region operations
+	bool_t mark_set; // Is mark currently set?
 	char *prompt;
 	size_t prompt_len; // strlen()
 	size_t prompt_chars; // Symbol positions
@@ -76,6 +82,7 @@ struct tinyrl_s {
 	bool_t esc_cont; // Does escape sequence continue
 	char esc_seq[10]; // Current ESC sequence (line doesn't contain it)
 	char *esc_p; // Pointer for unfinished ESC sequence
+	bool_t ctrlx_cont; // Ctrl-X prefix mode
 
 	char   *saved_prompt; // Saved prompt when in i-search mode
 	bool_t  isearch_cont; // Set in i-search mode

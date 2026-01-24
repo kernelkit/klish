@@ -72,6 +72,7 @@ typedef enum {
 	VT100_DEL_FDWORD,	// Delete word to the right
 	VT100_YANK_ARG,		// Yank argument from previous line
 	VT100_COMMENT_LINE,	// Comment out line
+	VT100_COPY_REGION,	// Copy region to kill buffer
 } vt100_esc_e;
 
 
