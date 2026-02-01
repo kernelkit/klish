@@ -485,10 +485,21 @@ static bool_t ktpd_session_exec(ktpd_session_t *ktpd, const char *line,
 	bool_t dry_run, bool_t *view_was_changed_p)
 {
 	kexec_t *exec = NULL;
+	const char *p = NULL;
 
 	assert(ktpd);
 	if (!ktpd)
 		return BOOL_FALSE;
+
+	// Skip comment lines (e.g., from ESC+# insert-comment)
+	p = line;
+	while (p && *p && isspace(*p))
+		p++;
+	if (p && *p == '#') {
+		if (retcode)
+			*retcode = 0;
+		return BOOL_TRUE;
+	}
 
 	// Parsing
 	exec = ksession_parse_for_exec(ktpd->session, line, error);
