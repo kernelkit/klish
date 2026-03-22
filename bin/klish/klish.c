@@ -284,7 +284,7 @@ int main(int argc, char **argv)
 		goto err;
 
 	// Display MessageOfTheDay
-	if (opts->banner)
+	if (opts->banner && ctx.mode == MODE_INTERACTIVE)
 		print_banner(opts->banner);
 
 	// Main loop
