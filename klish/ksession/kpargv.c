@@ -178,6 +178,9 @@ const char *kpargv_status_decode(kpargv_status_e status)
 	case KPARSE_NOACTION:
 		s = "Command has no action";
 		break;
+	case KPARSE_AMBIGUOUS:
+		s = "Ambiguous command, try ? for help or Tab for completion.";
+		break;
 	default: // MAX/NONE
 		s = "Unknown error";
 		break;

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -25,6 +26,100 @@
 
 
 #define ARGV_ALT_QUOTES "'"
+
+
+/* Return the COMMAND/COMMAND_CASE name an entry advertises, or NULL if
+ * the entry isn't command-typed (e.g. it's a STRING/INT/UINT PARAM).
+ * The matching tracks the PTYPE the entry was declared with.
+ */
+static const char *kentry_command_name(const kentry_t *entry, bool_t *case_sensitive)
+{
+	const kentry_t *ptype = NULL;
+	const char *ptype_name = NULL;
+	const char *name = NULL;
+
+	if (!entry)
+		return NULL;
+	ptype = kentry_nested_by_purpose(entry, KENTRY_PURPOSE_PTYPE);
+	if (!ptype)
+		return NULL;
+	ptype_name = kentry_name(ptype);
+	if (!ptype_name)
+		return NULL;
+	if (strcmp(ptype_name, "COMMAND") == 0) {
+		if (case_sensitive)
+			*case_sensitive = BOOL_FALSE;
+	} else if (strcmp(ptype_name, "COMMAND_CASE") == 0) {
+		if (case_sensitive)
+			*case_sensitive = BOOL_TRUE;
+	} else {
+		return NULL;
+	}
+	name = kentry_value(entry);
+	if (!name)
+		name = kentry_name(entry);
+	return name;
+}
+
+
+/* Pre-scan SWITCH children for a prefix-match ambiguity.  Returns
+ * BOOL_TRUE and writes a comma-separated list of matching names to
+ * 'buf' when the user's input prefix-matches more than one sibling
+ * command and no sibling matches exactly.  An exact match resolves
+ * the ambiguity in its own favour (e.g. 'run' typed against siblings
+ * 'run' and 'running-config' selects the 'run' command).
+ */
+static bool_t ksession_switch_ambiguous(const kentry_t *switch_entry,
+	const kpargv_t *parent_pargv, const char *arg,
+	char *buf, size_t buf_len)
+{
+	kentry_entrys_node_t *iter = NULL;
+	const kentry_t *nested = NULL;
+	size_t arg_len = 0;
+	size_t matches = 0;
+	size_t used = 0;
+
+	if (!arg || !*arg)
+		return BOOL_FALSE;
+	arg_len = strlen(arg);
+
+	iter = kentry_entrys_iter(switch_entry);
+	while ((nested = kentry_entrys_each(&iter))) {
+		bool_t case_sensitive = BOOL_FALSE;
+		const char *name = NULL;
+		int cmp;
+
+		if (kentry_purpose(nested) != KENTRY_PURPOSE_COMMON)
+			continue;
+		/* Skip optional entries already consumed at this level. */
+		if (parent_pargv && kpargv_entry_exists(parent_pargv, nested))
+			continue;
+		name = kentry_command_name(nested, &case_sensitive);
+		if (!name)
+			continue;
+		if (case_sensitive)
+			cmp = strcmp(arg, name);
+		else
+			cmp = strcasecmp(arg, name);
+		if (cmp == 0)
+			return BOOL_FALSE; /* exact match wins, no ambiguity */
+		if (case_sensitive)
+			cmp = strncmp(arg, name, arg_len);
+		else
+			cmp = strncasecmp(arg, name, arg_len);
+		if (cmp != 0)
+			continue;
+		matches++;
+		if (buf && buf_len) {
+			int n = snprintf(buf + used, buf_len - used, "%s%s",
+				used ? ", " : "", name);
+			if (n > 0 && (size_t)n < buf_len - used)
+				used += (size_t)n;
+		}
+	}
+
+	return matches > 1;
+}
 
 
 static bool_t ksession_validate_arg(ksession_t *session, kpargv_t *pargv)
@@ -190,6 +285,26 @@ static kpargv_status_e ksession_parse_arg(ksession_t *session,
 //fprintf(stderr, "SWITCH: name=%s, arg %s\n", kentry_name(entry),
 //*argv_iter ? faux_argv_current(*argv_iter) : "<empty>");
 
+		/* Reject ambiguous prefix matches before committing to the
+		 * first one the iteration happens to encounter.  Completion
+		 * and help walk all candidates anyway, so the check only
+		 * fires during exec.  The matching command names are echoed
+		 * to stderr as a hint; the status itself is reported via the
+		 * KPARSE_AMBIGUOUS code so klishd routes it through the same
+		 * channel as 'Command not found'.
+		 */
+		if (purpose == KPURPOSE_EXEC && *argv_iter) {
+			const char *arg = faux_argv_current(*argv_iter);
+			char names[256] = "";
+			if (ksession_switch_ambiguous(entry, pargv, arg,
+				names, sizeof(names))) {
+				fprintf(stderr,
+					"Ambiguous: '%s' matches %s\n",
+					arg, names);
+				return KPARSE_AMBIGUOUS;
+			}
+		}
+
 		while ((nested = kentry_entrys_each(&iter))) {
 			kpargv_status_e res = KPARSE_NONE;
 			// Ignore entries with non-COMMON purpose.
@@ -206,7 +321,8 @@ static kpargv_status_e ksession_parse_arg(ksession_t *session,
 				rc = res;
 
 			// Try next entries if current status is NOTFOUND or NONE
-			if ((res == KPARSE_OK) || (res == KPARSE_ERROR))
+			if ((res == KPARSE_OK) || (res == KPARSE_ERROR) ||
+				(res == KPARSE_AMBIGUOUS))
 				break;
 		}
 

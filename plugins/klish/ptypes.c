@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <strings.h>
 #include <stdlib.h>
 #include <errno.h>
 
@@ -18,6 +19,11 @@
 
 
 /** @brief PTYPE: Consider ENTRY's name (or "value" field) as a command
+ *
+ * Accepts any non-empty prefix of the command name (case-insensitive).
+ * Ambiguity between sibling commands is detected by the SWITCH-mode
+ * parser in ksession_parse.c, so by the time we get here at most one
+ * command in scope can prefix-match the user's input.
  */
 int klish_ptype_COMMAND(kcontext_t *context)
 {
@@ -34,7 +40,10 @@ int klish_ptype_COMMAND(kcontext_t *context)
 	if (!command_name)
 		return -1;
 
-	return faux_str_casecmp(value, command_name);
+	if (!value || !*value)
+		return -1;
+
+	return strncasecmp(value, command_name, strlen(value));
 }
 
 
@@ -104,6 +113,9 @@ int klish_help_COMMAND(kcontext_t *context)
 
 
 /** @brief PTYPE: ENTRY's name (or "value" field) as a case sensitive command
+ *
+ * Case-sensitive variant of klish_ptype_COMMAND.  Same prefix-match
+ * semantics; see that function for details.
  */
 int klish_ptype_COMMAND_CASE(kcontext_t *context)
 {
@@ -120,7 +132,10 @@ int klish_ptype_COMMAND_CASE(kcontext_t *context)
 	if (!command_name)
 		return -1;
 
-	return strcmp(value, command_name);
+	if (!value || !*value)
+		return -1;
+
+	return strncmp(value, command_name, strlen(value));
 }
 
 
